@@ -26,7 +26,7 @@ addon_info = {
 	"addon_description": _("""Description for the add-on.
 It can span multiple lines."""),
 	# version
-	"addon_version": "x.y",
+	"addon_version": "2",
 	# Author(s)
 	"addon_author": "name <name@domain.com>",
 	# URL for the add-on documentation support
@@ -57,7 +57,7 @@ It can span multiple lines."""),
 # pythonSources = ["addon/globalPlugins/*.py"]
 # For more information on SCons Glob expressions please take a look at:
 # https://scons.org/doc/production/HTML/scons-user/apd.html
-pythonSources = []
+pythonSources = ["addon/globalPlugins/lion"]
 
 # Files that contain strings for translation. Usually your python sources
 i18nSources = pythonSources + ["buildVars.py"]
