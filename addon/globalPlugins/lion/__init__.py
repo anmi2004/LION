@@ -7,6 +7,7 @@ import screenBitmap
 import logHandler
 import gui
 import tones
+import vision
 import textInfos
 import ui
 import time
@@ -16,7 +17,6 @@ import config
 import wx
 import locationHelper
 from . import lionGui
-from scriptHandler import getLastScriptRepeatCount, script
 
 from difflib import SequenceMatcher
 import ctypes
@@ -41,6 +41,7 @@ confspec={
 }
 config.conf.spec["lion"]=confspec
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
+	scriptCategory = _("Lion")
 
 	
 	user32 = ctypes.windll.user32
@@ -67,23 +68,35 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			pass
 
 	def onSettings(self, evt):
-		if gui.isInMessageBox:
+		from versionInfo import version_year
+		status = gui.message.isModalMessageBoxActive() if version_year>=2022 else gui.isInMessageBox
+		if status:
 			return
 		gui.mainFrame.prePopup()
 		d = lionGui.frmMain(gui.mainFrame)
 		d.Show()
 		gui.mainFrame.postPopup()
 
+
+	def isScreenCurtainRunning(self):
+		from visionEnhancementProviders.screenCurtain import ScreenCurtainProvider
+		screenCurtainId = ScreenCurtainProvider.getSettings().getId()
+		screenCurtainProviderInfo = vision.handler.getProviderInfo(screenCurtainId)
+		return bool(vision.handler.getProviderInstance(screenCurtainProviderInfo))
+
+
+	@scriptHandler.script(
+		description=_("Toggle OCR"), 
+		gestures=["kb:NVDA+Alt+N"])
 	def script_ReadLiveOcr(self, gesture):
-		repeat = getLastScriptRepeatCount()
-#		if repeat>=2:
-#			ui.message("o sa vine profile")
-			return
 		global active
+		if self.isScreenCurtainRunning() and not active:
+			ui.message(_("Please disable screen curtain before using Windows 10 OCR."))
+			return
+		tones.beep(222,333)
 		
 		if(active==False):
 			active=True
-			tones.beep(444,333)
 			ui.message(_("lion started"))
 			nav=api.getNavigatorObject()
 
@@ -92,8 +105,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		else:
 			
 			active=False
-			tones.beep(222,333)
-			ui.message(("lion stopped"))
+			ui.message(_("lion stopped"))
 			
 	def cropRectLTWH(self, r):
 		cfg=config.conf["lion" ]
@@ -113,8 +125,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		#print( self.targets)
 		global active
 
-
 		while(active==True ):
+			if self.isScreenCurtainRunning():
+				ui.message(_("Please disable screen curtain before using Windows 10 OCR."))
 			self.OcrScreen()
 			time.sleep(config.conf["lion"]["interval"])
 
@@ -133,11 +146,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		pixels = sb.captureImage(left, top, width, height) 
 		recog.recognize(pixels, imgInfo, recog_onResult)
 
-
-		
-	__gestures={
-	"kb:nvda+alt+l":"ReadLiveOcr"
-	}
 	
 def recog_onResult(result):
 	global prevString
