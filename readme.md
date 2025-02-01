@@ -1,4 +1,3 @@
-<title>LION - Live, Intellligent OCR for NVDA!</title>
 <h1>What is it</h1>
 LION is an addon which does Automatic OCr of certain screen portions, at a certain interval.
 Why do I say that it is intelligent? No, not because I've written it, nor because the "i" makes for a nice acronym.
