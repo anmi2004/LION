@@ -50,7 +50,6 @@ bytes for that mipmap level.
 
 Note: All data is stored in little-Endian (Intel) byte order.
 """
-
 from __future__ import annotations
 
 import struct
@@ -71,7 +70,7 @@ class FtexImageFile(ImageFile.ImageFile):
     format = "FTEX"
     format_description = "Texture File Format (IW2:EOC)"
 
-    def _open(self) -> None:
+    def _open(self):
         if not _accept(self.fp.read(4)):
             msg = "not an FTEX file"
             raise SyntaxError(msg)
@@ -93,9 +92,9 @@ class FtexImageFile(ImageFile.ImageFile):
 
         if format == Format.DXT1:
             self._mode = "RGBA"
-            self.tile = [ImageFile._Tile("bcn", (0, 0) + self.size, 0, (1,))]
+            self.tile = [("bcn", (0, 0) + self.size, 0, 1)]
         elif format == Format.UNCOMPRESSED:
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, "RGB")]
+            self.tile = [("raw", (0, 0) + self.size, 0, ("RGB", 0, 1))]
         else:
             msg = f"Invalid texture compression format: {repr(format)}"
             raise ValueError(msg)
@@ -103,11 +102,11 @@ class FtexImageFile(ImageFile.ImageFile):
         self.fp.close()
         self.fp = BytesIO(data)
 
-    def load_seek(self, pos: int) -> None:
+    def load_seek(self, pos):
         pass
 
 
-def _accept(prefix: bytes) -> bool:
+def _accept(prefix):
     return prefix[:4] == MAGIC
 
 

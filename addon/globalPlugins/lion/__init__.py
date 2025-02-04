@@ -15,17 +15,24 @@ import threading
 import config
 import wx
 import locationHelper
-from PPOCR_api import GetOcrApi
 from. import lionGui
+from .PPOCR_api import GetOcrApi
 from difflib import SequenceMatcher
+from .PIL import Image
+from io import BytesIO
 import ctypes
+import os
 
 addonHandler.initTranslation()
 active = False
 prevString = ""
 counter = 0
+# 获取当前脚本所在目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 构建PaddleOCR-json.exe的绝对路径
+ocr_path = os.path.join(current_dir, "PaddleOCR", "PaddleOCR-json.exe")
 # 初始化PaddleOCR-json识别器对象，传入引擎路径
-ocr = GetOcrApi(r"PaddleOCR\PaddleOCR-json.exe")
+ocr = GetOcrApi(ocr_path)
 confspec = {
     "cropUp": "integer(0, 100, default=0)",
     "cropLeft": "integer(0, 100, default=0)",
@@ -127,8 +134,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         sb = screenBitmap.ScreenBitmap(width, height)
         pixels = sb.captureImage(left, top, width, height)
         # 将捕获的像素数据转换为适合PaddleOCR-json的格式，这里假设可以转换为字节流
-        from io import BytesIO
-        from PIL import Image
         img = Image.frombytes('RGB', (width, height), pixels)
         buffered = BytesIO()
         img.save(buffered, format="PNG")

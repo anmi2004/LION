@@ -27,10 +27,8 @@ class PcdImageFile(ImageFile.ImageFile):
     format = "PCD"
     format_description = "Kodak PhotoCD"
 
-    def _open(self) -> None:
+    def _open(self):
         # rough
-        assert self.fp is not None
-
         self.fp.seek(2048)
         s = self.fp.read(2048)
 
@@ -47,9 +45,9 @@ class PcdImageFile(ImageFile.ImageFile):
 
         self._mode = "RGB"
         self._size = 768, 512  # FIXME: not correct for rotated images!
-        self.tile = [ImageFile._Tile("pcd", (0, 0) + self.size, 96 * 2048)]
+        self.tile = [("pcd", (0, 0) + self.size, 96 * 2048, None)]
 
-    def load_end(self) -> None:
+    def load_end(self):
         if self.tile_post_rotate:
             # Handle rotated PCDs
             self.im = self.im.rotate(self.tile_post_rotate)

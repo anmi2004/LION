@@ -20,8 +20,6 @@
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 from __future__ import annotations
 
-from typing import IO
-
 from . import Image, ImageFile
 from ._binary import i16le as word
 from ._binary import si16le as short
@@ -30,7 +28,7 @@ from ._binary import si32le as _long
 _handler = None
 
 
-def register_handler(handler: ImageFile.StubHandler | None) -> None:
+def register_handler(handler):
     """
     Install application-specific WMF image handler.
 
@@ -43,12 +41,12 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
 
-    class WmfHandler(ImageFile.StubHandler):
-        def open(self, im: ImageFile.StubImageFile) -> None:
+    class WmfHandler:
+        def open(self, im):
             im._mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
 
-        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
+        def load(self, im):
             im.fp.seek(0)  # rewind
             return Image.frombytes(
                 "RGB",
@@ -67,7 +65,7 @@ if hasattr(Image.core, "drawwmf"):
 # Read WMF file
 
 
-def _accept(prefix: bytes) -> bool:
+def _accept(prefix):
     return (
         prefix[:6] == b"\xd7\xcd\xc6\x9a\x00\x00" or prefix[:4] == b"\x01\x00\x00\x00"
     )
@@ -81,7 +79,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     format = "WMF"
     format_description = "Windows Metafile"
 
-    def _open(self) -> None:
+    def _open(self):
         self._inch = None
 
         # check placable header
@@ -92,9 +90,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             # get units per inch
             self._inch = word(s, 14)
-            if self._inch == 0:
-                msg = "Invalid inch"
-                raise ValueError(msg)
 
             # get bounding box
             x0 = short(s, 6)
@@ -131,7 +126,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             size = x1 - x0, y1 - y0
 
             # calculate dots per inch from bbox and frame
-            xdpi = 2540.0 * (x1 - x0) / (frame[2] - frame[0])
+            xdpi = 2540.0 * (x1 - y0) / (frame[2] - frame[0])
             ydpi = 2540.0 * (y1 - y0) / (frame[3] - frame[1])
 
             self.info["wmf_bbox"] = x0, y0, x1, y1
@@ -152,10 +147,10 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         if loader:
             loader.open(self)
 
-    def _load(self) -> ImageFile.StubHandler | None:
+    def _load(self):
         return _handler
 
-    def load(self, dpi: int | None = None) -> Image.core.PixelAccess | None:
+    def load(self, dpi=None):
         if dpi is not None and self._inch is not None:
             self.info["dpi"] = dpi
             x0, y0, x1, y1 = self.info["wmf_bbox"]
@@ -166,7 +161,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         return super().load()
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+def _save(im, fp, filename):
     if _handler is None or not hasattr(_handler, "save"):
         msg = "WMF save handler not installed"
         raise OSError(msg)

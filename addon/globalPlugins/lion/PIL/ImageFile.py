@@ -28,20 +28,15 @@
 #
 from __future__ import annotations
 
-import abc
 import io
 import itertools
-import os
 import struct
 import sys
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
+from typing import Any, NamedTuple
 
 from . import Image
 from ._deprecate import deprecate
 from ._util import is_path
-
-if TYPE_CHECKING:
-    from ._typing import StrOrBytesPath
 
 MAXBLOCK = 65536
 
@@ -69,7 +64,7 @@ Dict of known error codes returned from :meth:`.PyDecoder.decode`,
 # Helpers
 
 
-def _get_oserror(error: int, *, encoder: bool) -> OSError:
+def _get_oserror(error, *, encoder):
     try:
         msg = Image.core.getcodecstatus(error)
     except AttributeError:
@@ -80,7 +75,7 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
     return OSError(msg)
 
 
-def raise_oserror(error: int) -> OSError:
+def raise_oserror(error):
     deprecate(
         "raise_oserror",
         12,
@@ -90,16 +85,16 @@ def raise_oserror(error: int) -> OSError:
     raise _get_oserror(error, encoder=False)
 
 
-def _tilesort(t: _Tile) -> int:
+def _tilesort(t):
     # sort on offset
     return t[2]
 
 
 class _Tile(NamedTuple):
-    codec_name: str
-    extents: tuple[int, int, int, int] | None
-    offset: int = 0
-    args: tuple[Any, ...] | str | None = None
+    encoder_name: str
+    extents: tuple[int, int, int, int]
+    offset: int
+    args: tuple[Any, ...] | str | None
 
 
 #
@@ -110,34 +105,32 @@ class _Tile(NamedTuple):
 class ImageFile(Image.Image):
     """Base class for image file format handlers."""
 
-    def __init__(
-        self, fp: StrOrBytesPath | IO[bytes], filename: str | bytes | None = None
-    ) -> None:
+    def __init__(self, fp=None, filename=None):
         super().__init__()
 
         self._min_frame = 0
 
-        self.custom_mimetype: str | None = None
+        self.custom_mimetype = None
 
-        self.tile: list[_Tile] = []
-        """ A list of tile descriptors """
+        self.tile = None
+        """ A list of tile descriptors, or ``None`` """
 
         self.readonly = 1  # until we know better
 
-        self.decoderconfig: tuple[Any, ...] = ()
+        self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
 
         if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
-            self.filename = os.fspath(fp)
+            self.filename = fp
             self._exclusive_fp = True
         else:
             # stream
-            self.fp = cast(IO[bytes], fp)
-            self.filename = filename if filename is not None else ""
+            self.fp = fp
+            self.filename = filename
             # can be overridden
-            self._exclusive_fp = False
+            self._exclusive_fp = None
 
         try:
             try:
@@ -160,21 +153,17 @@ class ImageFile(Image.Image):
                 self.fp.close()
             raise
 
-    def _open(self) -> None:
-        pass
-
-    def get_format_mimetype(self) -> str | None:
+    def get_format_mimetype(self):
         if self.custom_mimetype:
             return self.custom_mimetype
         if self.format is not None:
             return Image.MIME.get(self.format.upper())
-        return None
 
-    def __setstate__(self, state: list[Any]) -> None:
+    def __setstate__(self, state):
         self.tile = []
         super().__setstate__(state)
 
-    def verify(self) -> None:
+    def verify(self):
         """Check file integrity"""
 
         # raise exception if something's wrong.  must be called
@@ -183,10 +172,10 @@ class ImageFile(Image.Image):
             self.fp.close()
         self.fp = None
 
-    def load(self) -> Image.core.PixelAccess | None:
+    def load(self):
         """Load image data based on tile list"""
 
-        if not self.tile and self._im is None:
+        if self.tile is None:
             msg = "cannot load this image"
             raise OSError(msg)
 
@@ -194,7 +183,7 @@ class ImageFile(Image.Image):
         if not self.tile:
             return pixel
 
-        self.map: mmap.mmap | None = None
+        self.map = None
         use_mmap = self.filename and len(self.tile) == 1
         # As of pypy 2.1.0, memory mapping was failing here.
         use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
@@ -202,17 +191,17 @@ class ImageFile(Image.Image):
         readonly = 0
 
         # look for read/seek overrides
-        if hasattr(self, "load_read"):
+        try:
             read = self.load_read
             # don't use mmap if there are custom read/seek functions
             use_mmap = False
-        else:
+        except AttributeError:
             read = self.fp.read
 
-        if hasattr(self, "load_seek"):
+        try:
             seek = self.load_seek
             use_mmap = False
-        else:
+        except AttributeError:
             seek = self.fp.seek
 
         if use_mmap:
@@ -222,7 +211,6 @@ class ImageFile(Image.Image):
                 args = (args, 0, 1)
             if (
                 decoder_name == "raw"
-                and isinstance(args, tuple)
                 and len(args) >= 3
                 and args[0] == self.mode
                 and args[0] in Image._MAPMODES
@@ -253,8 +241,11 @@ class ImageFile(Image.Image):
             # sort tiles in file order
             self.tile.sort(key=_tilesort)
 
-            # FIXME: This is a hack to handle TIFF's JpegTables tag.
-            prefix = getattr(self, "tile_prefix", b"")
+            try:
+                # FIXME: This is a hack to handle TIFF's JpegTables tag.
+                prefix = self.tile_prefix
+            except AttributeError:
+                prefix = b""
 
             # Remove consecutive duplicates that only differ by their offset
             self.tile = [
@@ -320,49 +311,40 @@ class ImageFile(Image.Image):
 
         return Image.Image.load(self)
 
-    def load_prepare(self) -> None:
+    def load_prepare(self):
         # create image memory if necessary
-        if self._im is None:
+        if not self.im or self.im.mode != self.mode or self.im.size != self.size:
             self.im = Image.core.new(self.mode, self.size)
         # create palette (optional)
         if self.mode == "P":
             Image.Image.load(self)
 
-    def load_end(self) -> None:
+    def load_end(self):
         # may be overridden
         pass
 
     # may be defined for contained formats
-    # def load_seek(self, pos: int) -> None:
+    # def load_seek(self, pos):
     #     pass
 
     # may be defined for blocked formats (e.g. PNG)
-    # def load_read(self, read_bytes: int) -> bytes:
+    # def load_read(self, bytes):
     #     pass
 
-    def _seek_check(self, frame: int) -> bool:
+    def _seek_check(self, frame):
         if (
             frame < self._min_frame
             # Only check upper limit on frames if additional seek operations
             # are not required to do so
             or (
                 not (hasattr(self, "_n_frames") and self._n_frames is None)
-                and frame >= getattr(self, "n_frames") + self._min_frame
+                and frame >= self.n_frames + self._min_frame
             )
         ):
             msg = "attempt to seek outside sequence"
             raise EOFError(msg)
 
         return self.tell() != frame
-
-
-class StubHandler:
-    def open(self, im: StubImageFile) -> None:
-        pass
-
-    @abc.abstractmethod
-    def load(self, im: StubImageFile) -> Image.Image:
-        pass
 
 
 class StubImageFile(ImageFile):
@@ -373,11 +355,11 @@ class StubImageFile(ImageFile):
     certain format, but relies on external code to load the file.
     """
 
-    def _open(self) -> None:
+    def _open(self):
         msg = "StubImageFile subclass must implement _open"
         raise NotImplementedError(msg)
 
-    def load(self) -> Image.core.PixelAccess | None:
+    def load(self):
         loader = self._load()
         if loader is None:
             msg = f"cannot find loader for this {self.format} file"
@@ -385,11 +367,11 @@ class StubImageFile(ImageFile):
         image = loader.load(self)
         assert image is not None
         # become the other object (!)
-        self.__class__ = image.__class__  # type: ignore[assignment]
+        self.__class__ = image.__class__
         self.__dict__ = image.__dict__
         return image.load()
 
-    def _load(self) -> StubHandler | None:
+    def _load(self):
         """(Hook) Find actual image loader."""
         msg = "StubImageFile subclass must implement _load"
         raise NotImplementedError(msg)
@@ -402,13 +384,13 @@ class Parser:
     """
 
     incremental = None
-    image: Image.Image | None = None
-    data: bytes | None = None
-    decoder: Image.core.ImagingDecoder | PyDecoder | None = None
+    image = None
+    data = None
+    decoder = None
     offset = 0
     finished = 0
 
-    def reset(self) -> None:
+    def reset(self):
         """
         (Consumer) Reset the parser.  Note that you can only call this
         method immediately after you've created a parser; parser
@@ -416,7 +398,7 @@ class Parser:
         """
         assert self.data is None, "cannot reuse parsers"
 
-    def feed(self, data: bytes) -> None:
+    def feed(self, data):
         """
         (Consumer) Feed data to the parser.
 
@@ -492,13 +474,13 @@ class Parser:
 
                 self.image = im
 
-    def __enter__(self) -> Parser:
+    def __enter__(self):
         return self
 
-    def __exit__(self, *args: object) -> None:
+    def __exit__(self, *args):
         self.close()
 
-    def close(self) -> Image.Image:
+    def close(self):
         """
         (Consumer) Close the stream.
 
@@ -532,7 +514,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im: Image.Image, fp: IO[bytes], tile: list[_Tile], bufsize: int = 0) -> None:
+def _save(im, fp, tile, bufsize=0):
     """Helper to save image based on tile list
 
     :param im: Image object.
@@ -560,14 +542,7 @@ def _save(im: Image.Image, fp: IO[bytes], tile: list[_Tile], bufsize: int = 0) -
         fp.flush()
 
 
-def _encode_tile(
-    im: Image.Image,
-    fp: IO[bytes],
-    tile: list[_Tile],
-    bufsize: int,
-    fh: int | None,
-    exc: BaseException | None = None,
-) -> None:
+def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
     for encoder_name, extents, offset, args in tile:
         if offset > 0:
             fp.seek(offset)
@@ -587,7 +562,6 @@ def _encode_tile(
                             break
                 else:
                     # slight speedup: compress to real file object
-                    assert fh is not None
                     errcode = encoder.encode_to_file(fh, bufsize)
             if errcode < 0:
                 raise _get_oserror(errcode, encoder=True) from exc
@@ -595,7 +569,7 @@ def _encode_tile(
             encoder.cleanup()
 
 
-def _safe_read(fp: IO[bytes], size: int) -> bytes:
+def _safe_read(fp, size):
     """
     Reads large blocks in a safe way.  Unlike fp.read(n), this function
     doesn't trust the user.  If the requested size is larger than
@@ -616,51 +590,49 @@ def _safe_read(fp: IO[bytes], size: int) -> bytes:
             msg = "Truncated File Read"
             raise OSError(msg)
         return data
-    blocks: list[bytes] = []
+    data = []
     remaining_size = size
     while remaining_size > 0:
         block = fp.read(min(remaining_size, SAFEBLOCK))
         if not block:
             break
-        blocks.append(block)
+        data.append(block)
         remaining_size -= len(block)
-    if sum(len(block) for block in blocks) < size:
+    if sum(len(d) for d in data) < size:
         msg = "Truncated File Read"
         raise OSError(msg)
-    return b"".join(blocks)
+    return b"".join(data)
 
 
 class PyCodecState:
-    def __init__(self) -> None:
+    def __init__(self):
         self.xsize = 0
         self.ysize = 0
         self.xoff = 0
         self.yoff = 0
 
-    def extents(self) -> tuple[int, int, int, int]:
+    def extents(self):
         return self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize
 
 
 class PyCodec:
-    fd: IO[bytes] | None
-
-    def __init__(self, mode: str, *args: Any) -> None:
-        self.im: Image.core.ImagingCore | None = None
+    def __init__(self, mode, *args):
+        self.im = None
         self.state = PyCodecState()
         self.fd = None
         self.mode = mode
         self.init(args)
 
-    def init(self, args: tuple[Any, ...]) -> None:
+    def init(self, args):
         """
         Override to perform codec specific initialization
 
-        :param args: Tuple of arg items from the tile entry
+        :param args: Array of args items from the tile entry
         :returns: None
         """
         self.args = args
 
-    def cleanup(self) -> None:
+    def cleanup(self):
         """
         Override to perform codec specific cleanup
 
@@ -668,7 +640,7 @@ class PyCodec:
         """
         pass
 
-    def setfd(self, fd: IO[bytes]) -> None:
+    def setfd(self, fd):
         """
         Called from ImageFile to set the Python file-like object
 
@@ -677,11 +649,7 @@ class PyCodec:
         """
         self.fd = fd
 
-    def setimage(
-        self,
-        im: Image.core.ImagingCore,
-        extents: tuple[int, int, int, int] | None = None,
-    ) -> None:
+    def setimage(self, im, extents=None):
         """
         Called from ImageFile to set the core output image for the codec
 
@@ -730,10 +698,10 @@ class PyDecoder(PyCodec):
     _pulls_fd = False
 
     @property
-    def pulls_fd(self) -> bool:
+    def pulls_fd(self):
         return self._pulls_fd
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer):
         """
         Override to perform the decoding process.
 
@@ -745,23 +713,19 @@ class PyDecoder(PyCodec):
         msg = "unavailable in base decoder"
         raise NotImplementedError(msg)
 
-    def set_as_raw(
-        self, data: bytes, rawmode: str | None = None, extra: tuple[Any, ...] = ()
-    ) -> None:
+    def set_as_raw(self, data, rawmode=None):
         """
         Convenience method to set the internal image from a stream of raw data
 
         :param data: Bytes to be set
         :param rawmode: The rawmode to be used for the decoder.
             If not specified, it will default to the mode of the image
-        :param extra: Extra arguments for the decoder.
         :returns: None
         """
 
         if not rawmode:
             rawmode = self.mode
-        d = Image._getdecoder(self.mode, "raw", rawmode, extra)
-        assert self.im is not None
+        d = Image._getdecoder(self.mode, "raw", rawmode)
         d.setimage(self.im, self.state.extents())
         s = d.decode(data)
 
@@ -784,10 +748,10 @@ class PyEncoder(PyCodec):
     _pushes_fd = False
 
     @property
-    def pushes_fd(self) -> bool:
+    def pushes_fd(self):
         return self._pushes_fd
 
-    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
+    def encode(self, bufsize):
         """
         Override to perform the encoding process.
 
@@ -799,7 +763,7 @@ class PyEncoder(PyCodec):
         msg = "unavailable in base encoder"
         raise NotImplementedError(msg)
 
-    def encode_to_pyfd(self) -> tuple[int, int]:
+    def encode_to_pyfd(self):
         """
         If ``pushes_fd`` is ``True``, then this method will be used,
         and ``encode()`` will only be called once.
@@ -811,11 +775,10 @@ class PyEncoder(PyCodec):
             return 0, -8  # bad configuration
         bytes_consumed, errcode, data = self.encode(0)
         if data:
-            assert self.fd is not None
             self.fd.write(data)
         return bytes_consumed, errcode
 
-    def encode_to_file(self, fh: int, bufsize: int) -> int:
+    def encode_to_file(self, fh, bufsize):
         """
         :param fh: File handle.
         :param bufsize: Buffer size.
@@ -828,5 +791,5 @@ class PyEncoder(PyCodec):
         while errcode == 0:
             status, errcode, buf = self.encode(bufsize)
             if status > 0:
-                os.write(fh, buf[status:])
+                fh.write(buf[status:])
         return errcode

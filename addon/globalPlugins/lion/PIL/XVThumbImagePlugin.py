@@ -33,7 +33,7 @@ for r in range(8):
             )
 
 
-def _accept(prefix: bytes) -> bool:
+def _accept(prefix):
     return prefix[:6] == _MAGIC
 
 
@@ -45,10 +45,8 @@ class XVThumbImageFile(ImageFile.ImageFile):
     format = "XVThumb"
     format_description = "XV thumbnail image"
 
-    def _open(self) -> None:
+    def _open(self):
         # check magic
-        assert self.fp is not None
-
         if not _accept(self.fp.read(6)):
             msg = "not an XV thumbnail file"
             raise SyntaxError(msg)
@@ -73,9 +71,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
 
         self.palette = ImagePalette.raw("RGB", PALETTE)
 
-        self.tile = [
-            ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), self.mode)
-        ]
+        self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), (self.mode, 0, 1))]
 
 
 # --------------------------------------------------------------------

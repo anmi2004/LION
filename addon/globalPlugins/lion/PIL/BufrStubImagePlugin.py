@@ -10,14 +10,12 @@
 #
 from __future__ import annotations
 
-from typing import IO
-
 from . import Image, ImageFile
 
 _handler = None
 
 
-def register_handler(handler: ImageFile.StubHandler | None) -> None:
+def register_handler(handler):
     """
     Install application-specific BUFR image handler.
 
@@ -31,7 +29,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 # Image adapter
 
 
-def _accept(prefix: bytes) -> bool:
+def _accept(prefix):
     return prefix[:4] == b"BUFR" or prefix[:4] == b"ZCZC"
 
 
@@ -39,7 +37,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
     format = "BUFR"
     format_description = "BUFR"
 
-    def _open(self) -> None:
+    def _open(self):
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(4)):
@@ -56,11 +54,11 @@ class BufrStubImageFile(ImageFile.StubImageFile):
         if loader:
             loader.open(self)
 
-    def _load(self) -> ImageFile.StubHandler | None:
+    def _load(self):
         return _handler
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+def _save(im, fp, filename):
     if _handler is None or not hasattr(_handler, "save"):
         msg = "BUFR save handler not installed"
         raise OSError(msg)

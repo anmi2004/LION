@@ -25,7 +25,7 @@ from . import Image, TiffImagePlugin
 # --------------------------------------------------------------------
 
 
-def _accept(prefix: bytes) -> bool:
+def _accept(prefix):
     return prefix[:8] == olefile.MAGIC
 
 
@@ -38,7 +38,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
     format_description = "Microsoft Image Composer"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self) -> None:
+    def _open(self):
         # read the OLE directory and see if this is a likely
         # to be a Microsoft Image Composer file
 
@@ -63,14 +63,14 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
             msg = "not an MIC file; no image entries"
             raise SyntaxError(msg)
 
-        self.frame = -1
+        self.frame = None
         self._n_frames = len(self.images)
         self.is_animated = self._n_frames > 1
 
         self.__fp = self.fp
         self.seek(0)
 
-    def seek(self, frame: int) -> None:
+    def seek(self, frame):
         if not self._seek_check(frame):
             return
         try:
@@ -85,15 +85,15 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         self.frame = frame
 
-    def tell(self) -> int:
+    def tell(self):
         return self.frame
 
-    def close(self) -> None:
+    def close(self):
         self.__fp.close()
         self.ole.close()
         super().close()
 
-    def __exit__(self, *args: object) -> None:
+    def __exit__(self, *args):
         self.__fp.close()
         self.ole.close()
         super().__exit__()
