@@ -140,7 +140,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             img.save(buffered, format="PNG")
             imageBytes = buffered.getvalue()
             res = ocr.runBytes(imageBytes)
-            logHandler.log.info(f"OCR result: {res}")
             if res.get("code", 0)!= 100:  # 修改为判断 code 字段
                 logHandler.log.warning(f"OCR engine returned non - success status: {res.get('code')}")
                 return
