@@ -7,47 +7,52 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 'lion' '1.12'\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2021-07-27 23:00+0800\n"
-"PO-Revision-Date: 2022-05-20 22:50+0800\n"
+"POT-Creation-Date: 2025-02-05 15:36+0800\n"
+"PO-Revision-Date: 2025-02-05 15:40+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.5\n"
 
-#: addon\globalPlugins\lion\__init__.py:44
+#: addon\globalPlugins\lion\__init__.py:50
 msgid "Lion"
 msgstr "Lion"
 
 #. Translators: name of the option in the menu.
-#: addon\globalPlugins\lion\__init__.py:59
+#: addon\globalPlugins\lion\__init__.py:62
 msgid "&LION Settings..."
 msgstr "LION 设置(&L)..."
 
 #. Translators: tooltip text for the menu item.
-#: addon\globalPlugins\lion\__init__.py:61
+#: addon\globalPlugins\lion\__init__.py:64
 msgid "modify OCR zone and interval"
 msgstr "更改识别区域和识别间隔"
 
-#: addon\globalPlugins\lion\__init__.py:87
+#: addon\globalPlugins\lion\__init__.py:90
 msgid "Toggle OCR"
 msgstr "开关 OCR"
 
-#: addon\globalPlugins\lion\__init__.py:92
-#: addon\globalPlugins\lion\__init__.py:128
-msgid "Please disable screen curtain before using Windows 10 OCR."
+#: addon\globalPlugins\lion\__init__.py:95
+#, fuzzy
+#| msgid "Please disable screen curtain before using Windows 10 OCR."
+msgid "Please disable screen curtain before using OCR."
 msgstr "请在使用 OCR 之前关闭黑屏。"
 
-#: addon\globalPlugins\lion\__init__.py:98
+#: addon\globalPlugins\lion\__init__.py:100
 msgid "lion started"
 msgstr "启动 LION"
 
-#: addon\globalPlugins\lion\__init__.py:106
+#: addon\globalPlugins\lion\__init__.py:105
 msgid "lion stopped"
 msgstr "停止 LION"
+
+#: addon\globalPlugins\lion\__init__.py:127
+msgid "Please disable screen curtain before using Windows 10 OCR."
+msgstr "请在使用 OCR 之前关闭黑屏。"
 
 #: addon\globalPlugins\lion\lionGui.py:28
 msgid "LION Settings"
@@ -121,13 +126,13 @@ msgstr "取消(&C)"
 #. Translators: Summary for this add-on
 #. to be shown on installation and add-on information found in Add-ons Manager.
 #: buildVars.py:23
-msgid "LION - Live, intelligent OCR for NVDA"
-msgstr "LION - 用于 NVDA 的实时 OCR 插件。"
+msgid "LION"
+msgstr ""
 
 #. Add-on description
 #. Translators: Long description to be shown for this add-on on add-on information from add-ons manager
 #: buildVars.py:26
 msgid ""
-"does live OCR for the whole screen, refreshing at a specified interval. "
-"Toggle with NVDA+alt+l "
-msgstr "对屏幕内容以指定的时间间隔进行实时 OCR 。使用 NVDA +alt +l 开关。"
+"does live OCR for the whole screen, refreshing at a specified interval.\n"
+"    Toggle with NVDA+alt+n "
+msgstr "对屏幕内容以指定的时间间隔进行实时 OCR 。使用 NVDA +alt +n 开关。"

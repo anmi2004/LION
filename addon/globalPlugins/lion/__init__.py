@@ -2,7 +2,6 @@ import globalPluginHandler
 import addonHandler
 import scriptHandler
 import api
-import screenBitmap
 import logHandler
 import gui
 import tones
@@ -16,12 +15,13 @@ import config
 import wx
 import locationHelper
 from. import lionGui
-from .PPOCR_api import GetOcrApi
+from.PPOCR_api import GetOcrApi
 from difflib import SequenceMatcher
-from .PIL import Image
+from.PIL import Image, ImageGrab
 from io import BytesIO
 import ctypes
 import os
+
 
 addonHandler.initTranslation()
 active = False
@@ -29,10 +29,11 @@ prevString = ""
 counter = 0
 # 获取当前脚本所在目录
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# 构建PaddleOCR-json.exe的绝对路径
+# 构建PaddleOCR - json.exe的绝对路径
 ocr_path = os.path.join(current_dir, "PaddleOCR", "PaddleOCR-json.exe")
-# 初始化PaddleOCR-json识别器对象，传入引擎路径
+# 初始化PaddleOCR - json识别器对象，传入引擎路径
 ocr = GetOcrApi(ocr_path)
+
 confspec = {
     "cropUp": "integer(0, 100, default=0)",
     "cropLeft": "integer(0, 100, default=0)",
@@ -57,15 +58,15 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def createMenu(self):
         self.prefsMenu = gui.mainFrame.sysTrayIcon.menu.GetMenuItems()[0].GetSubMenu()
         self.lionSettingsItem = self.prefsMenu.Append(wx.ID_ANY,
-                                                   # Translators: name of the option in the menu.
-                                                   _("&LION Settings..."),
-                                                   # Translators: tooltip text for the menu item.
-                                                   _("modify OCR zone and interval"))
+                                                     # Translators: name of the option in the menu.
+                                                     _("&LION Settings..."),
+                                                     # Translators: tooltip text for the menu item.
+                                                     _("modify OCR zone and interval"))
         gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onSettings, self.lionSettingsItem)
 
     def terminate(self):
         try:
-            self.prefsMenu.RemoveItem(self.lionSettingsItem)
+            self.prefsMenu.Remove(self.lionSettingsItem)
         except wx.PyDeadObjectError:
             pass
 
@@ -91,7 +92,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def script_ReadLiveOcr(self, gesture):
         global active
         if self.isScreenCurtainRunning() and not active:
-            ui.message(_("Please disable screen curtain before using Windows 10 OCR."))
+            ui.message(_("Please disable screen curtain before using OCR."))
             return
         tones.beep(222, 333)
         if active == False:
@@ -130,23 +131,27 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     def OcrScreen(self):
         global prevString
         global counter
+        global ocr
         left, top, width, height = self.targets[config.conf["lion"]["target"]]
-        sb = screenBitmap.ScreenBitmap(width, height)
-        pixels = sb.captureImage(left, top, width, height)
-        # 将捕获的像素数据转换为适合PaddleOCR-json的格式，这里假设可以转换为字节流
-        img = Image.frombytes('RGB', (width, height), pixels)
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        imageBytes = buffered.getvalue()
-        res = ocr.runBytes(imageBytes)
-        # 检查状态码，如果状态码不是100则忽略相关内容
-        if res.get("status", 0)!= 100:
-            return
-        for line in res["data"]:
-            text = line["text"]
-            threshold = SequenceMatcher(None, prevString, text).ratio()
-            if threshold < config.conf['lion']['threshold'] and text!= "" and text!= "Play":
-                ui.message(text)
-                prevString = text
-            if counter > 9:
-                counter = 0
+        try:
+            # 使用PIL的ImageGrab截取屏幕
+            img = ImageGrab.grab(bbox=(left, top, left + width, top + height))
+            buffered = BytesIO()
+            img.save(buffered, format="PNG")
+            imageBytes = buffered.getvalue()
+            res = ocr.runBytes(imageBytes)
+            logHandler.log.info(f"OCR result: {res}")
+            if res.get("code", 0)!= 100:  # 修改为判断 code 字段
+                logHandler.log.warning(f"OCR engine returned non - success status: {res.get('code')}")
+                return
+            all_text = ""
+            for line in res["data"]:
+                text = line["text"]
+                all_text += text + " "
+            threshold = SequenceMatcher(None, prevString, all_text).ratio()
+            if threshold < config.conf['lion']['threshold'] and all_text.strip():
+                ui.message(all_text.strip())
+                prevString = all_text.strip()
+        except Exception as e:
+            logHandler.log.error(f"Error in OcrScreen: {e}")
+
