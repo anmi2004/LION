@@ -26,7 +26,7 @@ addon_info = {
     "addon_description": _("""does live OCR for the whole screen, refreshing at a specified interval.
     Toggle with NVDA+alt+n """,),
     # version
-    "addon_version": "2",
+    "addon_version": "2.0.0",
     # Author(s)
     "addon_author": "Stefan Moisei <vortex37@gmail.com>, Cary-rowen <manchen_0528@outlook.com>, anmi2004 <123346lv@gmail.com>",
     # URL for the add-on documentation support
