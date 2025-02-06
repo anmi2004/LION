@@ -1,1 +1,3 @@
-Use this file to explain what has changed in your add-on since the previous release. This will be included automatically in the release description when used with GitHub actions.
+## 版本2.0
+1. 完全重构OCR识别部分，采用PaddleOCR-json，进一步提升了识别效果。
+2. 导入插件模板，并进行相关修改，以方便编译插件。
