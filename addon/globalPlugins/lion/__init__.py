@@ -14,24 +14,25 @@ import threading
 import config
 import wx
 import locationHelper
-from. import lionGui
-from.PPOCR_api import GetOcrApi
+from . import lionGui
+from .PPOCR_api import GetOcrApi
 from difflib import SequenceMatcher
-from.PIL import Image, ImageGrab
+from PIL import Image, ImageGrab
 from io import BytesIO
 import ctypes
 import os
-
 
 addonHandler.initTranslation()
 active = False
 prevString = ""
 counter = 0
-# 获取当前脚本所在目录
+
+ctypes.windll.user32.SetProcessDPIAware()  # 声明DPI感知
+user32 = ctypes.windll.user32
+resX, resY = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# 构建PaddleOCR - json.exe的绝对路径
 ocr_path = os.path.join(current_dir, "PaddleOCR", "PaddleOCR-json.exe")
-# 初始化PaddleOCR - json识别器对象，传入引擎路径
 ocr = GetOcrApi(ocr_path)
 
 confspec = {
@@ -45,11 +46,8 @@ confspec = {
 }
 config.conf.spec["lion"] = confspec
 
-
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
     scriptCategory = _("Lion")
-    user32 = ctypes.windll.user32
-    resX, resY = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 
     def __init__(self):
         super(GlobalPlugin, self).__init__()
@@ -57,11 +55,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
     def createMenu(self):
         self.prefsMenu = gui.mainFrame.sysTrayIcon.menu.GetMenuItems()[0].GetSubMenu()
-        self.lionSettingsItem = self.prefsMenu.Append(wx.ID_ANY,
-                                                     # Translators: name of the option in the menu.
-                                                     _("&LION Settings..."),
-                                                     # Translators: tooltip text for the menu item.
-                                                     _("modify OCR zone and interval"))
+        self.lionSettingsItem = self.prefsMenu.Append(
+            wx.ID_ANY,
+            _("&LION Settings..."),
+            _("modify OCR zone and interval"))
         gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onSettings, self.lionSettingsItem)
 
     def terminate(self):
@@ -69,6 +66,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             self.prefsMenu.Remove(self.lionSettingsItem)
         except wx.PyDeadObjectError:
             pass
+        ocr.exit()
+
 
     def onSettings(self, evt):
         from versionInfo import version_year
@@ -95,62 +94,93 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             ui.message(_("Please disable screen curtain before using OCR."))
             return
         tones.beep(222, 333)
-        if active == False:
+        if not active:
             active = True
             ui.message(_("lion started"))
-            nav = api.getNavigatorObject()
             threading.Thread(target=self.ocrLoop).start()
         else:
             active = False
             ui.message(_("lion stopped"))
 
-    def cropRectLTWH(self, r):
+    def getDynamicTargetRect(self):
+        """实时获取目标区域"""
         cfg = config.conf["lion"]
-        if r is None:
-            return locationHelper.RectLTWH(0, 0, 0, 0)
-        return locationHelper.RectLTWH(int((r.left + r.width) * cfg['cropLeft'] / 100.0),
-                                      int((r.top + r.height) * cfg['cropUp'] / 100.0),
-                                      int(r.width - (r.width * cfg['cropRight'] / 100.0)),
-                                      int(r.height - (r.height * cfg['cropDown'] / 100.0)))
+        target_type = cfg["target"]
+        
+        if target_type == 0:
+            obj = api.getNavigatorObject()
+        elif target_type == 1:
+            obj = locationHelper.RectLTWH(0, 0, resX, resY)
+        elif target_type == 2:
+            obj = api.getForegroundObject()
+        elif target_type == 3:
+            obj = api.getFocusObject()
+        
+        base_rect = obj.location if hasattr(obj, 'location') else locationHelper.RectLTWH(0, 0, resX, resY)
+        return self.cropRectLTWH(base_rect)
+
+    def cropRectLTWH(self, r):
+        """修正后的裁剪区域计算"""
+        if not r or r.width <=0 or r.height <=0:
+            return locationHelper.RectLTWH(0, 0, resX, resY)
+            
+        cfg = config.conf["lion"]
+        left = r.left + int(r.width * cfg['cropLeft'] / 100.0)
+        top = r.top + int(r.height * cfg['cropUp'] / 100.0)
+        width = r.width - int(r.width * (cfg['cropLeft'] + cfg['cropRight']) / 100.0)
+        height = r.height - int(r.height * (cfg['cropUp'] + cfg['cropDown']) / 100.0)
+        
+        # 边界保护
+        left = max(r.left, min(left, r.left + r.width))
+        top = max(r.top, min(top, r.top + r.height))
+        width = max(10, min(width, resX - left))
+        height = max(10, min(height, resY - top))
+        
+        return locationHelper.RectLTWH(left, top, width, height)
 
     def ocrLoop(self):
-        cfg = config.conf["lion"]
-        self.targets = {
-            0: api.getNavigatorObject().location,
-            1: self.cropRectLTWH(locationHelper.RectLTWH(0, 0, self.resX, self.resY)),
-            2: self.cropRectLTWH(api.getForegroundObject().location),
-            3: api.getFocusObject().location
-        }
         global active
-        while active == True:
+        while active:
             if self.isScreenCurtainRunning():
-                ui.message(_("Please disable screen curtain before using Windows 10 OCR."))
+                ui.message(_("Please disable screen curtain before using OCR."))
             self.OcrScreen()
             time.sleep(config.conf["lion"]["interval"])
 
     def OcrScreen(self):
-        global prevString
-        global counter
-        global ocr
-        left, top, width, height = self.targets[config.conf["lion"]["target"]]
+        global prevString, ocr
         try:
-            # 使用PIL的ImageGrab截取屏幕
-            img = ImageGrab.grab(bbox=(left, top, left + width, top + height))
+            # 实时获取目标区域
+            target_rect = self.getDynamicTargetRect()
+            left, top, width, height = target_rect.left, target_rect.top, target_rect.width, target_rect.height
+            
+            # 截图区域验证
+            if width <=0 or height <=0:
+                logHandler.log.warning(f"Invalid capture area: {target_rect}")
+                return
+                
+            # 边界保护
+            left = max(0, min(left, resX-10))
+            top = max(0, min(top, resY-10))
+            right = min(left + width, resX)
+            bottom = min(top + height, resY)
+            
+            img = ImageGrab.grab(bbox=(left, top, right, bottom))
             buffered = BytesIO()
             img.save(buffered, format="PNG")
-            imageBytes = buffered.getvalue()
-            res = ocr.runBytes(imageBytes)
-            if res.get("code", 0)!= 100:  # 修改为判断 code 字段
-                logHandler.log.warning(f"OCR engine returned non - success status: {res.get('code')}")
+            res = ocr.runBytes(buffered.getvalue())
+            
+            if res.get("code", 0) != 100:
+                #logHandler.log.warning(f"OCR error: {res.get('code')}")
                 return
-            all_text = ""
-            for line in res["data"]:
-                text = line["text"]
-                all_text += text + " "
-            threshold = SequenceMatcher(None, prevString, all_text).ratio()
-            if threshold < config.conf['lion']['threshold'] and all_text.strip():
+                
+            all_text = " ".join([line["text"] for line in res["data"]])
+            similarity = SequenceMatcher(None, prevString, all_text).ratio()
+            
+            if similarity < config.conf['lion']['threshold'] and all_text.strip():
                 ui.message(all_text.strip())
                 prevString = all_text.strip()
+                
         except Exception as e:
-            logHandler.log.error(f"Error in OcrScreen: {e}")
-
+            logHandler.log.error(f"OCR Error: {str(e)}")
+            if "cannot identify image file" in str(e):
+                ui.message(_("Screen capture failed"))
