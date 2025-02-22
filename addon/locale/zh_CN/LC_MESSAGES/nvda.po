@@ -1,58 +1,55 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the 'LION' package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 'lion' '1.12'\n"
+"Project-Id-Version: 'LION' '2.0.0'\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2025-02-05 15:36+0800\n"
-"PO-Revision-Date: 2025-02-05 15:40+0800\n"
+"POT-Creation-Date: 2025-02-22 20:11+0800\n"
+"PO-Revision-Date: 2025-02-22 20:36+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 3.5\n"
 
 #: addon\globalPlugins\lion\__init__.py:50
 msgid "Lion"
 msgstr "Lion"
 
-#. Translators: name of the option in the menu.
-#: addon\globalPlugins\lion\__init__.py:62
+#: addon\globalPlugins\lion\__init__.py:60
 msgid "&LION Settings..."
 msgstr "LION 设置(&L)..."
 
-#. Translators: tooltip text for the menu item.
-#: addon\globalPlugins\lion\__init__.py:64
+#: addon\globalPlugins\lion\__init__.py:61
 msgid "modify OCR zone and interval"
 msgstr "更改识别区域和识别间隔"
 
-#: addon\globalPlugins\lion\__init__.py:90
+#: addon\globalPlugins\lion\__init__.py:89
 msgid "Toggle OCR"
-msgstr "开关 OCR"
+msgstr "开关OCR"
 
-#: addon\globalPlugins\lion\__init__.py:95
-#, fuzzy
-#| msgid "Please disable screen curtain before using Windows 10 OCR."
+#: addon\globalPlugins\lion\__init__.py:94
+#: addon\globalPlugins\lion\__init__.py:145
 msgid "Please disable screen curtain before using OCR."
 msgstr "请在使用 OCR 之前关闭黑屏。"
 
-#: addon\globalPlugins\lion\__init__.py:100
+#: addon\globalPlugins\lion\__init__.py:99
 msgid "lion started"
-msgstr "启动 LION"
+msgstr "启动Lion"
 
-#: addon\globalPlugins\lion\__init__.py:105
+#: addon\globalPlugins\lion\__init__.py:103
 msgid "lion stopped"
-msgstr "停止 LION"
+msgstr "停止Lion"
 
-#: addon\globalPlugins\lion\__init__.py:127
-msgid "Please disable screen curtain before using Windows 10 OCR."
-msgstr "请在使用 OCR 之前关闭黑屏。"
+#: addon\globalPlugins\lion\__init__.py:186
+msgid "Screen capture failed"
+msgstr ""
 
 #: addon\globalPlugins\lion\lionGui.py:28
 msgid "LION Settings"
@@ -68,11 +65,11 @@ msgstr "0.2"
 
 #: addon\globalPlugins\lion\lionGui.py:42
 msgid "OCR:"
-msgstr "OCR:"
+msgstr "OCR"
 
 #: addon\globalPlugins\lion\lionGui.py:45
 msgid "Navigator object"
-msgstr "当前导航对象"
+msgstr "当前对象"
 
 #: addon\globalPlugins\lion\lionGui.py:45
 msgid "Whole Screen"
@@ -116,18 +113,18 @@ msgstr "从右侧裁剪像素 (％)："
 
 #: addon\globalPlugins\lion\lionGui.py:89
 msgid "OK"
-msgstr "确定(&O)"
+msgstr "确定"
 
 #: addon\globalPlugins\lion\lionGui.py:92
 msgid "Cancel"
-msgstr "取消(&C)"
+msgstr "取消"
 
 #. Add-on summary, usually the user visible name of the addon.
 #. Translators: Summary for this add-on
 #. to be shown on installation and add-on information found in Add-ons Manager.
 #: buildVars.py:23
 msgid "LION"
-msgstr ""
+msgstr "LION"
 
 #. Add-on description
 #. Translators: Long description to be shown for this add-on on add-on information from add-ons manager
