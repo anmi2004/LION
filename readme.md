@@ -1,38 +1,59 @@
-<h1>What is it</h1>
-LION is an addon which does Automatic OCr of certain screen portions, at a certain interval.
-Why do I say that it is intelligent? No, not because I've written it, nor because the "i" makes for a nice acronym.
-Since it does OCR of the same screen portion multiple times, normally it would read the same text multiple times, which is not very nice. So, I implemented a mechanism to skip speaking of the text if it seems similar to the previously recognised text.<br>
-<h1>What can I do with it?</h1>
-The main reason I wrote it was to read subtitles. Due to the way it works, it can read any subtitles on the screen, including Youtube, Netflix and other online video sites, subtitles embedded in AVI files, and even live tV!<br>
-Make sure to set the video to full screen when using it, as it works like sighted eyes do. It needs big text for better performance. The quality won't be perfect, try to set the font of the subtitles as large as possible, if you have the option, and use a high  resolution screen. The OCR engine it uses is not perfect. It may have inferior results on certain images.<br>
-Other than that, It can be used to monitor any inaccessible text on the screen, like video game menus. It won't tell you highlighted text, unfortunately.<br>
-<h1>How do I use it?</h1>
-To launch it with default options, just press NVDA+alt+l. LION will start OCR of the whole screen at a 1 second interval, speaking only when the text changes. Hopefully. :)
-If you want to customize its behaviour, go to the NVDA Menu, Preferences, LION settings. For example, a video file might have a logo in the upper left corner that gets read along with the subtitle, and disrupts the experience. We'll see how to fix this in the next section.<br>
-LION has the following settings:
-<ol>
-<li> OCR interval: how often the program does OCR. Takes values from 0.1 second to 10 seconds.</li>
-<li>OCR target: specifies the screen portion to OCR. Options are: current control, current window, navigator object, and full screen</li>
-<li>Crop  pixels from above,  below, right, left. In full screen mode, those four fields allow you to crop sections from the screen from being scanned. Those settings work only in full screen and current window modes.<br>
-Why is this setting useful? Let's remember the logo example above. Just crop 10% or so from above  to skip the logo, and you won't hear it. Actually, to make the recognition faster and less resource intensive, you can crop like 70% from above, since subtitles are usually found in the lower third of the screen.</li>
-</ol>
-<h1>what's new</h1>
-<h2>version 1.12</h2>
-<ol>
-<li> NVDA 2021.1 compatibility.</li>
-<li>fixed bugs</li>
-<li>changed sounds signaling activation and deactivation of the addon</li>
-</ol>
-<h2>version 1.11</h2>
-Fixed a bug, mainly observed in youtube fullscreen.
-<h2>version 1.1</h2>
+# What can this add-on do?
+LION is an add-on that performs automatic Optical Character Recognition (OCR) on specific screen areas at predefined intervals.  
 
-<ol>
-<li>the crop settings affect the current window mode, too</li>
-<li>implemented a similarity threshold setting, mainlly useful in games. LION always compares the current text with the one which has been spoken previously. If it thinks the text hasn't changed, it doesn't speak. This setting controls how aggressive LION is in comparing texts. 0 means all texts are identical, practically rendering the addon unusable. 1 will read all texts, even if they are the same. The default is 0.5.</li>
+Why is it called "smart"? Not because I developed it, nor because the "i" makes a clever acronym.  
 
-</ol>
-<h2>version 1.0</h1>
-initial version
-<h1>Who wrote this, how often will I see updates?</h1>
-My name is Stefan Moisei, a blind programmer trying to survive in an East European country, Romania, who has a lot to catch up to get to an occidental level. LION, and other blind specific software are just a hobby for me, developed in my spare time. So, I'm afraid updates won't come too often. But if you can code, this is NVDA, so the source is right there. :)
+Since it performs repeated OCR scans on the same screen area, it would normally read identical text multiple times - which isn't ideal. To solve this, I implemented a mechanism that prevents speech output when newly recognized text closely matches previous results.
+
+# What can I use it for?
+My primary purpose for developing this add-on was subtitle reading. Its working principle enables it to read various types of screen-based subtitles, including those on YouTube, Netflix, Bilibili, embedded subtitles in AVI files, and even live TV captions!  
+
+When using, always set videos to full-screen mode as it mimics human visual perception. Larger text yields better recognition results, though accuracy isn't perfect. For optimal performance:  
+- Enlarge subtitle fonts when possible  
+- Use high-resolution displays  
+The OCR engine isn't flawless and may struggle with certain graphics.  
+
+Beyond subtitles, it can monitor screen text that isn't directly accessible, like video game menus. However, it cannot recognize highlighted text selections.
+
+# How do I use it?
+To start with default settings: Press <kbd>NVDA+ALT+N</kbd>. LION will perform full-screen OCR every 1 second and only speak when text changes.  
+
+For customization:  
+1. Navigate to <menupath>NVDA menu > Preferences > LION Settings</menupath>  
+2. Example use case: Video files might display logos in the top-left corner that get read alongside subtitles. The next section explains solutions.  
+
+**Available settings**:  
+1. **OCR Interval**: Frequency of OCR operations (0.1-10 seconds)  
+2. **OCR Target**: Screen area to scan (Options: Current Control/Current Window/Navigation Object/Full Screen)  
+3. **Crop Pixels (Top/Bottom/Right/Left)**: Trims unwanted areas in Full Screen/Current Window modes. Useful for ignoring persistent logos - e.g., cropping 10% from top removes top-left logos. For efficiency, you might crop 70% from top as subtitles typically occupy the lower third.  
+
+# Changelog
+## Version 2.0
+1. Complete OCR engine overhaul using PaddleOCR-json for improved accuracy  
+2. Implemented add-on template for easier compilation  
+
+## Version 1.15
+1. Adapted for NVDA 2022.1 compatibility  
+2. Completed interface translations  
+3. Added shortcut customization in <menuitem>Input Gestures</menuitem> dialog  
+4. Added warnings when initiating OCR during screensaver/black screen  
+5. Changed default shortcut to <kbd>NVDA+ALT+N</kbd>  
+
+## Version 1.12
+1. Ensured compatibility with NVDA 2021.1  
+2. Fixed various bugs  
+3. Updated activation/deactivation sounds  
+
+## Version 1.11
+Fixed a major YouTube full-screen mode bug  
+
+## Version 1.1
+1. Crop settings now affect Current Window mode  
+2. Added similarity threshold (0-1) for gaming scenarios:  
+   - Compares current text with previous output  
+   - 0: All texts considered identical (unusable)  
+   - 1: Always speaks (even duplicates)  
+   - Default: 0.5  
+
+## Version 1.0
+Initial release
