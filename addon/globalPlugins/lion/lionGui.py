@@ -23,15 +23,15 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 	def makeSettings(self, settingsSizer: wx.BoxSizer):
 		settingsSizerHelper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 
-		intervalMin = float(config.conf.getConfigValidation(("lion", "interval")).kwargs["min"])
-		intervalMax = float(config.conf.getConfigValidation(("lion", "interval")).kwargs["max"])
-		intervalLabelText = _("OCR &interval:")
+		intervalMin = int(config.conf.getConfigValidation(("lion", "interval")).kwargs["min"] * 100)
+		intervalMax = int(config.conf.getConfigValidation(("lion", "interval")).kwargs["max"] * 100)
+		intervalLabelText = _("OCR &interval (ms):")
 		self.intervalEdit = settingsSizerHelper.addLabeledControl(
 			intervalLabelText,
-			wx.SpinCtrlDouble,
+			nvdaControls.SelectOnFocusSpinCtrl,
 			min=intervalMin,
 			max=intervalMax,
-			initial=config.conf["lion"]["interval"],
+			initial=int(config.conf["lion"]["interval"] * 100),
 		)
 
 		targetListLabelText = _("&OCR target:")
@@ -47,12 +47,12 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		)
 		self.targetList.SetSelection(config.conf["lion"]["target"])
 
-		similarityThresholdMin = float(config.conf.getConfigValidation(("lion", "threshold")).kwargs["min"])
-		similarityThresholdMax = float(config.conf.getConfigValidation(("lion", "threshold")).kwargs["max"])
-		similarityThresholdLabelText = _("&Text similarity threshold:")
+		similarityThresholdMin = int(config.conf.getConfigValidation(("lion", "threshold")).kwargs["min"] * 100)
+		similarityThresholdMax = int(config.conf.getConfigValidation(("lion", "threshold")).kwargs["max"] * 100)
+		similarityThresholdLabelText = _("&Text similarity threshold (%):")
 		self.similarityThresholdEdit = settingsSizerHelper.addLabeledControl(
 			similarityThresholdLabelText,
-			wx.SpinCtrlDouble,
+			nvdaControls.SelectOnFocusSpinCtrl,
 			min=similarityThresholdMin,
 			max=similarityThresholdMax,
 			initial=config.conf["lion"]["threshold"],
@@ -99,6 +99,6 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		config.conf["lion"]["cropLeft"] = self.cropLeftEdit.GetValue()
 		config.conf["lion"]["cropDown"] = self.cropDownEdit.GetValue()
 		config.conf["lion"]["cropRight"] = self.cropRightEdit.GetValue()
-		config.conf["lion"]["interval"] = self.intervalEdit.GetValue()
+		config.conf["lion"]["interval"] = float(self.intervalEdit.GetValue() / 100)
 		config.conf["lion"]["target"] = self.targetList.GetSelection()
-		config.conf["lion"]["threshold"] = self.similarityThresholdEdit.GetValue()
+		config.conf["lion"]["threshold"] = float(self.similarityThresholdEdit.GetValue() / 100)
