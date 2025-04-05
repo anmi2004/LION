@@ -55,7 +55,7 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 			nvdaControls.SelectOnFocusSpinCtrl,
 			min=similarityThresholdMin,
 			max=similarityThresholdMax,
-			initial=config.conf["lion"]["threshold"],
+			initial=int(config.conf["lion"]["threshold"] * 100),
 		)
 
 		cropUpLabelText = _("Crop pixels from &above (%):")
