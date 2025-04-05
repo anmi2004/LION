@@ -23,8 +23,8 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 	def makeSettings(self, settingsSizer: wx.BoxSizer):
 		settingsSizerHelper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 
-		intervalMin = int(config.conf.getConfigValidation(("lion", "interval")).kwargs["min"] * 100)
-		intervalMax = int(config.conf.getConfigValidation(("lion", "interval")).kwargs["max"] * 100)
+		intervalMin = int(float(config.conf.getConfigValidation(("lion", "interval")).kwargs["min"]) * 100)
+		intervalMax = int(float(config.conf.getConfigValidation(("lion", "interval")).kwargs["max"]) * 100)
 		intervalLabelText = _("OCR &interval (ms):")
 		self.intervalEdit = settingsSizerHelper.addLabeledControl(
 			intervalLabelText,
@@ -47,8 +47,8 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		)
 		self.targetList.SetSelection(config.conf["lion"]["target"])
 
-		similarityThresholdMin = int(config.conf.getConfigValidation(("lion", "threshold")).kwargs["min"] * 100)
-		similarityThresholdMax = int(config.conf.getConfigValidation(("lion", "threshold")).kwargs["max"] * 100)
+		similarityThresholdMin = int(float(config.conf.getConfigValidation(("lion", "threshold")).kwargs["min"]) * 100)
+		similarityThresholdMax = int(float(config.conf.getConfigValidation(("lion", "threshold")).kwargs["max"]) * 100)
 		similarityThresholdLabelText = _("&Text similarity threshold (%):")
 		self.similarityThresholdEdit = settingsSizerHelper.addLabeledControl(
 			similarityThresholdLabelText,
