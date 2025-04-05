@@ -37,13 +37,13 @@ ocr_path = os.path.join(current_dir, "PaddleOCR", "PaddleOCR-json.exe")
 ocr = GetOcrApi(ocr_path)
 
 confspec = {
-	"cropUp": "integer(0, 100, default=0)",
-	"cropLeft": "integer(0, 100, default=0)",
-	"cropRight": "integer(0, 100, default=0)",
-	"cropDown": "integer(0, 100, default=0)",
-	"target": "integer(0, 3, default=1)",
-	"threshold": "float(0.0, 1.0, default=0.5)",
-	"interval": "float(0.0, 10.0, default=1.0)",
+	"cropUp": "integer(min=0, max=100, default=0)",
+	"cropLeft": "integer(min=0, max=100, default=0)",
+	"cropRight": "integer(min=0, max=100, default=0)",
+	"cropDown": "integer(min=0, max=100, default=0)",
+	"target": "integer(min=0, max=3, default=1)",
+	"threshold": "float(min=0.0, max=1.0, default=0.5)",
+	"interval": "float(min=0.0, max=10.0, default=1.0)",
 }
 config.conf.spec["lion"] = confspec
 
