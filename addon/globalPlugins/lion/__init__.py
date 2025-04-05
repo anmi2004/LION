@@ -12,19 +12,18 @@ import globalPluginHandler
 import gui
 import locationHelper
 import logHandler
-import queueHandler
 import scriptHandler
-import textInfos
 import tones
 import ui
 import vision
-import wx
-from PIL import Image, ImageGrab
+from PIL import ImageGrab
 
-from . import lionGui
+from .lionGui import LIONSettingsPanel
 from .PPOCR_api import GetOcrApi
 
+
 addonHandler.initTranslation()
+
 active = False
 prevString = ""
 counter = 0
@@ -54,32 +53,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def __init__(self):
 		super(GlobalPlugin, self).__init__()
-		self.createMenu()
-
-	def createMenu(self):
-		self.prefsMenu = gui.mainFrame.sysTrayIcon.menu.GetMenuItems()[0].GetSubMenu()
-		self.lionSettingsItem = self.prefsMenu.Append(
-			wx.ID_ANY, _("&LION Settings..."), _("modify OCR zone and interval")
-		)
-		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onSettings, self.lionSettingsItem)
+		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(LIONSettingsPanel)
 
 	def terminate(self):
-		try:
-			self.prefsMenu.Remove(self.lionSettingsItem)
-		except wx.PyDeadObjectError:
-			pass
+		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.remove(LIONSettingsPanel)
 		ocr.exit()
-
-	def onSettings(self, evt):
-		from versionInfo import version_year
-
-		status = gui.message.isModalMessageBoxActive() if version_year >= 2022 else gui.isInMessageBox
-		if status:
-			return
-		gui.mainFrame.prePopup()
-		d = lionGui.frmMain(gui.mainFrame)
-		d.Show()
-		gui.mainFrame.postPopup()
 
 	def isScreenCurtainRunning(self):
 		from visionEnhancementProviders.screenCurtain import ScreenCurtainProvider
@@ -120,7 +98,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		base_rect = obj.location if hasattr(obj, "location") else locationHelper.RectLTWH(0, 0, resX, resY)
 		return self.cropRectLTWH(base_rect)
 
-	def cropRectLTWH(self, r):
+	def cropRectLTWH(self, r: locationHelper.RectLTWH):
 		"""修正后的裁剪区域计算"""
 		if not r or r.width <= 0 or r.height <= 0:
 			return locationHelper.RectLTWH(0, 0, resX, resY)
