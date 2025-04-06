@@ -23,15 +23,15 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 	def makeSettings(self, settingsSizer: wx.BoxSizer):
 		settingsSizerHelper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 
-		intervalMin = int(float(config.conf.getConfigValidation(("lion", "interval")).kwargs["min"]) * 100)
-		intervalMax = int(float(config.conf.getConfigValidation(("lion", "interval")).kwargs["max"]) * 100)
+		intervalMin = int(float(config.conf.getConfigValidation(("lion", "interval")).kwargs["min"]) * 1000)
+		intervalMax = int(float(config.conf.getConfigValidation(("lion", "interval")).kwargs["max"]) * 1000)
 		intervalLabelText = _("OCR &interval (ms):")
 		self.intervalEdit = settingsSizerHelper.addLabeledControl(
 			intervalLabelText,
 			nvdaControls.SelectOnFocusSpinCtrl,
 			min=intervalMin,
 			max=intervalMax,
-			initial=int(config.conf["lion"]["interval"] * 100),
+			initial=int(config.conf["lion"]["interval"] * 1000),
 		)
 
 		targetListLabelText = _("&OCR target:")
@@ -99,6 +99,6 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		config.conf["lion"]["cropLeft"] = self.cropLeftEdit.GetValue()
 		config.conf["lion"]["cropDown"] = self.cropDownEdit.GetValue()
 		config.conf["lion"]["cropRight"] = self.cropRightEdit.GetValue()
-		config.conf["lion"]["interval"] = float(self.intervalEdit.GetValue() / 100)
+		config.conf["lion"]["interval"] = float(self.intervalEdit.GetValue() / 1000)
 		config.conf["lion"]["target"] = self.targetList.GetSelection()
 		config.conf["lion"]["threshold"] = float(self.similarityThresholdEdit.GetValue() / 100)
