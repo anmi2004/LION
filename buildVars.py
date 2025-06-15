@@ -26,7 +26,7 @@ addon_info = {
     "addon_description": _("""does live OCR for the whole screen, refreshing at a specified interval.
     Toggle with NVDA+alt+n """,),
     # version
-    "addon_version": "2.0.1",
+    "addon_version": "2.0.2",
     # Author(s)
     "addon_author": "Stefan Moisei <vortex37@gmail.com>, Cary-rowen <manchen_0528@outlook.com>, anmi2004 <123346lv@gmail.com>",
     # URL for the add-on documentation support
@@ -38,7 +38,7 @@ addon_info = {
     # Minimum NVDA version supported (e.g. "2018.3.0", minor version is optional)
     "addon_minimumNVDAVersion": "2023.1",
     # Last NVDA version supported/tested (e.g. "2018.4.0", ideally more recent than minimum version)
-    "addon_lastTestedNVDAVersion": "2024.1",
+    "addon_lastTestedNVDAVersion": "2025.1",
     # Add-on update channel (default is None, denoting stable releases,
     # and for development releases, use "dev".)
     # Do not change unless you know what you are doing!
@@ -97,4 +97,3 @@ brailleTables = {}
 # displayName (name of the speech dictionary  shown to users and translatable),
 # mandatory (True when always enabled, False when not.
 symbolDictionaries = {}
-
