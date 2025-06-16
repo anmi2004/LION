@@ -14,7 +14,7 @@ addonHandler.initTranslation()
 # end wxGlade
 
 sizer=None
-class frmMain(wx.Frame):
+class MainFrame(wx.Frame):
 	def fillPercents(self):
 		return [str(i) for i in range(0,101)]
 		
@@ -130,7 +130,7 @@ class frmMain(wx.Frame):
 
 class LION(wx.App):
 	def OnInit(self):
-		self.frame = frmMain(None, wx.ID_ANY, "")
+		self.frame = MainFrame(None, wx.ID_ANY, "")
 		self.SetTopWindow(self.frame)
 		self.frame.Show()
 		return True
