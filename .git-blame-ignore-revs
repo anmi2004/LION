@@ -1,1 +1,5 @@
+# Documentation: https://git-scm.com/docs/git-blame#Documentation/git-blame.txt---ignore-revs-fileltfilegt
+# Usage: git config --local blame.ignoreRevsFile .git-blame-ignore-revs
 
+# Code formatting
+525813f114fca4b12f756bd782192f039bffb7ca
