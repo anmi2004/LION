@@ -8,74 +8,69 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 'LION' '2.0.0'\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2025-02-22 20:11+0800\n"
-"PO-Revision-Date: 2025-02-22 20:36+0800\n"
+"POT-Creation-Date: 2026-03-08 11:20+0800\n"
+"PO-Revision-Date: 2026-03-08 11:58+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.8\n"
 
-#: addon\globalPlugins\lion\__init__.py:50
+#: addon\globalPlugins\lion\__init__.py:52
 msgid "Lion"
 msgstr "Lion"
 
-#: addon\globalPlugins\lion\__init__.py:60
-msgid "&LION Settings..."
-msgstr "LION 设置(&L)..."
-
-#: addon\globalPlugins\lion\__init__.py:61
-msgid "modify OCR zone and interval"
-msgstr "更改识别区域和识别间隔"
-
-#: addon\globalPlugins\lion\__init__.py:89
+#: addon\globalPlugins\lion\__init__.py:69
 msgid "Toggle OCR"
 msgstr "开关OCR"
 
-#: addon\globalPlugins\lion\__init__.py:94
-#: addon\globalPlugins\lion\__init__.py:145
+#: addon\globalPlugins\lion\__init__.py:73
+#: addon\globalPlugins\lion\__init__.py:124
 msgid "Please disable screen curtain before using OCR."
 msgstr "请在使用 OCR 之前关闭黑屏。"
 
-#: addon\globalPlugins\lion\__init__.py:99
+#: addon\globalPlugins\lion\__init__.py:78
 msgid "lion started"
 msgstr "启动Lion"
 
-#: addon\globalPlugins\lion\__init__.py:103
+#: addon\globalPlugins\lion\__init__.py:82
 msgid "lion stopped"
 msgstr "停止Lion"
 
-#: addon\globalPlugins\lion\__init__.py:186
+#: addon\globalPlugins\lion\__init__.py:170
 msgid "Screen capture failed"
-msgstr ""
+msgstr "截图失败"
+
+#. Add-on summary, usually the user visible name of the addon.
+#. Translators: Summary for this add-on
+#. to be shown on installation and add-on information found in Add-ons Manager.
+#: addon\globalPlugins\lion\lionGui.py:19 buildVars.py:23
+msgid "LION"
+msgstr "LION"
+
+#: addon\globalPlugins\lion\lionGui.py:21
+msgid "modify OCR zone and interval"
+msgstr "更改识别区域和识别间隔"
 
 #: addon\globalPlugins\lion\lionGui.py:28
-msgid "LION Settings"
-msgstr "LION 设置"
+msgid "OCR &interval (ms):"
+msgstr "识别间隔(ms):"
 
 #: addon\globalPlugins\lion\lionGui.py:37
-msgid "0.1"
-msgstr "0.1"
-
-#: addon\globalPlugins\lion\lionGui.py:37
-msgid "0.2"
-msgstr "0.2"
+msgid "&OCR target:"
+msgstr "识别目标:"
 
 #: addon\globalPlugins\lion\lionGui.py:42
-msgid "OCR:"
-msgstr "OCR"
-
-#: addon\globalPlugins\lion\lionGui.py:45
 msgid "Navigator object"
 msgstr "当前对象"
 
-#: addon\globalPlugins\lion\lionGui.py:45
+#: addon\globalPlugins\lion\lionGui.py:43
 msgid "Whole Screen"
 msgstr "全屏幕"
 
-#: addon\globalPlugins\lion\lionGui.py:45
+#: addon\globalPlugins\lion\lionGui.py:44
 msgid "current window"
 msgstr "当前窗口"
 
@@ -83,48 +78,25 @@ msgstr "当前窗口"
 msgid "current control"
 msgstr "当前控件"
 
-#: addon\globalPlugins\lion\lionGui.py:49
-msgid "Text similarity threshold:"
-msgstr "文本相似度阈值："
-
 #: addon\globalPlugins\lion\lionGui.py:52
-#: addon\globalPlugins\lion\lionGui.py:60
-#: addon\globalPlugins\lion\lionGui.py:68
-#: addon\globalPlugins\lion\lionGui.py:76
-#: addon\globalPlugins\lion\lionGui.py:84
-msgid "choice 1"
-msgstr ""
+msgid "&Text similarity threshold (%):"
+msgstr "文本相似度阈值(%):"
 
-#: addon\globalPlugins\lion\lionGui.py:57
-msgid "Crop pixels from above (%):"
-msgstr "从上方裁剪像素 (％)："
+#: addon\globalPlugins\lion\lionGui.py:61
+msgid "Crop pixels from &above (%):"
+msgstr "从上方裁剪像素 (%):"
 
-#: addon\globalPlugins\lion\lionGui.py:65
-msgid "crop pixels from below(%):"
-msgstr "从下方裁剪像素（％）："
+#: addon\globalPlugins\lion\lionGui.py:70
+msgid "crop pixels from &below(%):"
+msgstr "从下方裁剪像素(%):"
 
-#: addon\globalPlugins\lion\lionGui.py:73
-msgid "crop pixels from left(%):"
-msgstr "从左侧裁剪像素（％）："
+#: addon\globalPlugins\lion\lionGui.py:79
+msgid "crop pixels from &left(%):"
+msgstr "从左侧裁剪像素(%):"
 
-#: addon\globalPlugins\lion\lionGui.py:81
-msgid "crop pixels from right (%):"
-msgstr "从右侧裁剪像素 (％)："
-
-#: addon\globalPlugins\lion\lionGui.py:89
-msgid "OK"
-msgstr "确定"
-
-#: addon\globalPlugins\lion\lionGui.py:92
-msgid "Cancel"
-msgstr "取消"
-
-#. Add-on summary, usually the user visible name of the addon.
-#. Translators: Summary for this add-on
-#. to be shown on installation and add-on information found in Add-ons Manager.
-#: buildVars.py:23
-msgid "LION"
-msgstr "LION"
+#: addon\globalPlugins\lion\lionGui.py:88
+msgid "crop pixels from &right (%):"
+msgstr "从右侧裁剪像素(%):"
 
 #. Add-on description
 #. Translators: Long description to be shown for this add-on on add-on information from add-ons manager
@@ -133,3 +105,24 @@ msgid ""
 "does live OCR for the whole screen, refreshing at a specified interval.\n"
 "    Toggle with NVDA+alt+n "
 msgstr "对屏幕内容以指定的时间间隔进行实时 OCR 。使用 NVDA +alt +n 开关。"
+
+#~ msgid "&LION Settings..."
+#~ msgstr "LION 设置(&L)..."
+
+#~ msgid "LION Settings"
+#~ msgstr "LION 设置"
+
+#~ msgid "0.1"
+#~ msgstr "0.1"
+
+#~ msgid "0.2"
+#~ msgstr "0.2"
+
+#~ msgid "OCR:"
+#~ msgstr "OCR"
+
+#~ msgid "OK"
+#~ msgstr "确定"
+
+#~ msgid "Cancel"
+#~ msgstr "取消"
