@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v4
 
     - run: echo -e "pre-commit\nscons\nmarkdown">requirements.txt
 
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: 3.11
         cache: 'pip'
@@ -40,7 +40,7 @@ jobs:
     - name: building addon
       run: scons && scons pot
 
-    - uses: actions/upload-artifact@v7
+    - uses: actions/upload-artifact@v4
       with:
         name: packaged_addon
         path: |
@@ -52,9 +52,9 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
     needs: ["build"]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v4
     - name: download releases files
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@v4
     - name: Display structure of downloaded files
       run: ls -R
     - name: Calculate sha256
