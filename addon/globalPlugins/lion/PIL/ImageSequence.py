@@ -16,9 +16,11 @@
 ##
 from __future__ import annotations
 
-from typing import Callable
-
 from . import Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class Iterator:
@@ -33,7 +35,7 @@ class Iterator:
     :param im: An image object.
     """
 
-    def __init__(self, im: Image.Image):
+    def __init__(self, im: Image.Image) -> None:
         if not hasattr(im, "seek"):
             msg = "im must have seek method"
             raise AttributeError(msg)

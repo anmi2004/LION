@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
-from typing import Any, NoReturn
 
-from ._typing import TypeGuard
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any, NoReturn, TypeGuard
 
-
-def is_path(f: Any) -> TypeGuard[bytes | str | Path]:
-    return isinstance(f, (bytes, str, Path))
+    from ._typing import StrOrBytesPath
 
 
-def is_directory(f: Any) -> TypeGuard[bytes | str | Path]:
-    """Checks if an object is a string, and that it points to a directory."""
-    return is_path(f) and os.path.isdir(f)
+def is_path(f: Any) -> TypeGuard[StrOrBytesPath]:
+    return isinstance(f, (bytes, str, os.PathLike))
 
 
 class DeferredError:

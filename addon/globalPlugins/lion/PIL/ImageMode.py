@@ -16,24 +16,17 @@ from __future__ import annotations
 
 import sys
 from functools import lru_cache
+from typing import NamedTuple
 
 
-class ModeDescriptor:
+class ModeDescriptor(NamedTuple):
     """Wrapper for mode strings."""
 
-    def __init__(
-        self,
-        mode: str,
-        bands: tuple[str, ...],
-        basemode: str,
-        basetype: str,
-        typestr: str,
-    ) -> None:
-        self.mode = mode
-        self.bands = bands
-        self.basemode = basemode
-        self.basetype = basetype
-        self.typestr = typestr
+    mode: str
+    bands: tuple[str, ...]
+    basemode: str
+    basetype: str
+    typestr: str
 
     def __str__(self) -> str:
         return self.mode
@@ -42,7 +35,6 @@ class ModeDescriptor:
 @lru_cache
 def getmode(mode: str) -> ModeDescriptor:
     """Gets a mode descriptor for the given mode."""
-    # initialize mode cache
     endian = "<" if sys.byteorder == "little" else ">"
 
     modes = {
@@ -50,8 +42,8 @@ def getmode(mode: str) -> ModeDescriptor:
         # Bits need to be extended to bytes
         "1": ("L", "L", ("1",), "|b1"),
         "L": ("L", "L", ("L",), "|u1"),
-        "I": ("L", "I", ("I",), endian + "i4"),
-        "F": ("L", "F", ("F",), endian + "f4"),
+        "I": ("L", "I", ("I",), f"{endian}i4"),
+        "F": ("L", "F", ("F",), f"{endian}f4"),
         "P": ("P", "L", ("P",), "|u1"),
         "RGB": ("RGB", "L", ("R", "G", "B"), "|u1"),
         "RGBX": ("RGB", "L", ("R", "G", "B", "X"), "|u1"),
@@ -63,9 +55,6 @@ def getmode(mode: str) -> ModeDescriptor:
         "HSV": ("RGB", "L", ("H", "S", "V"), "|u1"),
         # extra experimental modes
         "RGBa": ("RGB", "L", ("R", "G", "B", "a"), "|u1"),
-        "BGR;15": ("RGB", "L", ("B", "G", "R"), "|u1"),
-        "BGR;16": ("RGB", "L", ("B", "G", "R"), "|u1"),
-        "BGR;24": ("RGB", "L", ("B", "G", "R"), "|u1"),
         "LA": ("L", "L", ("L", "A"), "|u1"),
         "La": ("L", "L", ("L", "a"), "|u1"),
         "PA": ("RGB", "L", ("P", "A"), "|u1"),
@@ -82,8 +71,8 @@ def getmode(mode: str) -> ModeDescriptor:
         "I;16LS": "<i2",
         "I;16B": ">u2",
         "I;16BS": ">i2",
-        "I;16N": endian + "u2",
-        "I;16NS": endian + "i2",
+        "I;16N": f"{endian}u2",
+        "I;16NS": f"{endian}i2",
         "I;32": "<u4",
         "I;32B": ">u4",
         "I;32L": "<u4",

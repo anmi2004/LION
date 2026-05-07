@@ -59,10 +59,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		ocr.exit()
 
 	def isScreenCurtainRunning(self):
-		from visionEnhancementProviders.screenCurtain import ScreenCurtainProvider
-		screenCurtainId = ScreenCurtainProvider.getSettings().getId()
-		screenCurtainProviderInfo = vision.handler.getProviderInfo(screenCurtainId)
-		return bool(vision.handler.getProviderInstance(screenCurtainProviderInfo))
+		from screenCurtain import screenCurtain
+		return screenCurtain.enabled
 
 	@scriptHandler.script(description=_("Toggle OCR"), gestures=["kb:NVDA+Alt+N"])
 	def script_ReadLiveOcr(self, gesture):

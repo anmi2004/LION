@@ -17,10 +17,13 @@
 #
 from __future__ import annotations
 
+import os
 import warnings
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
+from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
 
@@ -35,7 +38,7 @@ MODES = {
     (3, 1): "1",
     (3, 8): "L",
     (3, 16): "LA",
-    (2, 16): "BGR;5",
+    (2, 16): "BGRA;15Z",
     (2, 24): "BGR",
     (2, 32): "BGRA",
 }
@@ -49,8 +52,10 @@ class TgaImageFile(ImageFile.ImageFile):
     format = "TGA"
     format_description = "Targa"
 
-    def _open(self):
+    def _open(self) -> None:
         # process header
+        assert self.fp is not None
+
         s = self.fp.read(18)
 
         id_len = s[0]
@@ -82,11 +87,9 @@ class TgaImageFile(ImageFile.ImageFile):
             elif depth == 16:
                 self._mode = "LA"
         elif imagetype in (1, 9):
-            self._mode = "P"
+            self._mode = "P" if colormaptype else "L"
         elif imagetype in (2, 10):
-            self._mode = "RGB"
-            if depth == 32:
-                self._mode = "RGBA"
+            self._mode = "RGB" if depth == 24 else "RGBA"
         else:
             msg = "unknown TGA mode"
             raise SyntaxError(msg)
@@ -115,16 +118,20 @@ class TgaImageFile(ImageFile.ImageFile):
             start, size, mapdepth = i16(s, 3), i16(s, 5), s[7]
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
-                    "BGR;15", b"\0" * 2 * start + self.fp.read(2 * size)
+                    "BGRA;15Z", bytes(2 * start) + self.fp.read(2 * size)
                 )
+                self.palette.mode = "RGBA"
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
-                    "BGR", b"\0" * 3 * start + self.fp.read(3 * size)
+                    "BGR", bytes(3 * start) + self.fp.read(3 * size)
                 )
             elif mapdepth == 32:
                 self.palette = ImagePalette.raw(
-                    "BGRA", b"\0" * 4 * start + self.fp.read(4 * size)
+                    "BGRA", bytes(4 * start) + self.fp.read(4 * size)
                 )
+            else:
+                msg = "unknown TGA map depth"
+                raise SyntaxError(msg)
 
         # setup tile descriptor
         try:
@@ -132,7 +139,7 @@ class TgaImageFile(ImageFile.ImageFile):
             if imagetype & 8:
                 # compressed
                 self.tile = [
-                    (
+                    ImageFile._Tile(
                         "tga_rle",
                         (0, 0) + self.size,
                         self.fp.tell(),
@@ -141,7 +148,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 ]
             else:
                 self.tile = [
-                    (
+                    ImageFile._Tile(
                         "raw",
                         (0, 0) + self.size,
                         self.fp.tell(),
@@ -151,7 +158,21 @@ class TgaImageFile(ImageFile.ImageFile):
         except KeyError:
             pass  # cannot decode
 
-    def load_end(self):
+    def load_end(self) -> None:
+        if self.mode == "RGBA":
+            assert self.fp is not None
+            self.fp.seek(-26, os.SEEK_END)
+            footer = self.fp.read(26)
+            if footer.endswith(b"TRUEVISION-XFILE.\x00"):
+                # version 2
+                extension_offset = i32(footer)
+                if extension_offset:
+                    self.fp.seek(extension_offset + 494)
+                    attributes_type = self.fp.read(1)
+                    if attributes_type == b"\x00":
+                        # No alpha
+                        self.im.fillband(3, 255)
+
         if self._flip_horizontally:
             self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
@@ -171,7 +192,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:
@@ -231,11 +252,15 @@ def _save(im, fp, filename):
 
     if rle:
         ImageFile._save(
-            im, fp, [("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))]
+            im,
+            fp,
+            [ImageFile._Tile("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))],
         )
     else:
         ImageFile._save(
-            im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))]
+            im,
+            fp,
+            [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))],
         )
 
     # write targa version 2 footer

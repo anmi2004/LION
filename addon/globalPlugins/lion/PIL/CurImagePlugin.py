@@ -25,8 +25,8 @@ from ._binary import i32le as i32
 # --------------------------------------------------------------------
 
 
-def _accept(prefix):
-    return prefix[:4] == b"\0\0\2\0"
+def _accept(prefix: bytes) -> bool:
+    return prefix.startswith(b"\0\0\2\0")
 
 
 ##
@@ -37,7 +37,8 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
     format = "CUR"
     format_description = "Windows Cursor"
 
-    def _open(self):
+    def _open(self) -> None:
+        assert self.fp is not None
         offset = self.fp.tell()
 
         # check magic
@@ -63,8 +64,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
 
         # patch up the bitmap height
         self._size = self.size[0], self.size[1] // 2
-        d, e, o, a = self.tile[0]
-        self.tile[0] = d, (0, 0) + self.size, o, a
+        self.tile = [self.tile[0]._replace(extents=(0, 0) + self.size)]
 
 
 #

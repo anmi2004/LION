@@ -18,23 +18,38 @@
 ##
 from __future__ import annotations
 
-from collections import namedtuple
+from typing import NamedTuple
 
 
-class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
-    __slots__ = []
+class _TagInfo(NamedTuple):
+    value: int | None
+    name: str
+    type: int | None
+    length: int | None
+    enum: dict[str, int]
 
-    def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
+
+class TagInfo(_TagInfo):
+    __slots__: list[str] = []
+
+    def __new__(
+        cls,
+        value: int | None = None,
+        name: str = "unknown",
+        type: int | None = None,
+        length: int | None = None,
+        enum: dict[str, int] | None = None,
+    ) -> TagInfo:
         return super().__new__(cls, value, name, type, length, enum or {})
 
-    def cvt_enum(self, value):
+    def cvt_enum(self, value: str) -> int | str:
         # Using get will call hash(value), which can be expensive
         # for some types (e.g. Fraction). Since self.enum is rarely
         # used, it's usually better to test it first.
         return self.enum.get(value, value) if self.enum else value
 
 
-def lookup(tag, group=None):
+def lookup(tag: int, group: int | None = None) -> TagInfo:
     """
     :param tag: Integer tag number
     :param group: Which :py:data:`~PIL.TiffTags.TAGS_V2_GROUPS` to look in
@@ -81,7 +96,7 @@ DOUBLE = 12
 IFD = 13
 LONG8 = 16
 
-TAGS_V2 = {
+_tags_v2: dict[int, tuple[str, int, int] | tuple[str, int, int, dict[str, int]]] = {
     254: ("NewSubfileType", LONG, 1),
     255: ("SubfileType", SHORT, 1),
     256: ("ImageWidth", LONG, 1),
@@ -188,6 +203,11 @@ TAGS_V2 = {
     531: ("YCbCrPositioning", SHORT, 1),
     532: ("ReferenceBlackWhite", RATIONAL, 6),
     700: ("XMP", BYTE, 0),
+    # Four private SGI tags
+    32995: ("Matteing", SHORT, 1),
+    32996: ("DataType", SHORT, 0),
+    32997: ("ImageDepth", LONG, 1),
+    32998: ("TileDepth", LONG, 1),
     33432: ("Copyright", ASCII, 1),
     33723: ("IptcNaaInfo", UNDEFINED, 1),
     34377: ("PhotoshopInfo", BYTE, 0),
@@ -225,7 +245,7 @@ TAGS_V2 = {
     50838: ("ImageJMetaDataByteCounts", LONG, 0),  # Can be more than one
     50839: ("ImageJMetaData", UNDEFINED, 1),  # see Issue #2006
 }
-TAGS_V2_GROUPS = {
+_tags_v2_groups = {
     # ExifIFD
     34665: {
         36864: ("ExifVersion", UNDEFINED, 1),
@@ -273,7 +293,7 @@ TAGS_V2_GROUPS = {
 
 # Legacy Tags structure
 # these tags aren't included above, but were in the previous versions
-TAGS = {
+TAGS: dict[int | tuple[int, int], str] = {
     347: "JPEGTables",
     700: "XMP",
     # Additional Exif Info
@@ -417,9 +437,12 @@ TAGS = {
     50784: "Alias Layer Metadata",
 }
 
+TAGS_V2: dict[int, TagInfo] = {}
+TAGS_V2_GROUPS: dict[int, dict[int, TagInfo]] = {}
 
-def _populate():
-    for k, v in TAGS_V2.items():
+
+def _populate() -> None:
+    for k, v in _tags_v2.items():
         # Populate legacy structure.
         TAGS[k] = v[0]
         if len(v) == 4:
@@ -428,16 +451,15 @@ def _populate():
 
         TAGS_V2[k] = TagInfo(k, *v)
 
-    for tags in TAGS_V2_GROUPS.values():
-        for k, v in tags.items():
-            tags[k] = TagInfo(k, *v)
+    for group, tags in _tags_v2_groups.items():
+        TAGS_V2_GROUPS[group] = {k: TagInfo(k, *v) for k, v in tags.items()}
 
 
 _populate()
 ##
 # Map type numbers to type names -- defined in ImageFileDirectory.
 
-TYPES = {}
+TYPES: dict[int, str] = {}
 
 #
 # These tags are handled by default in libtiff, without
@@ -536,7 +558,6 @@ LIBTIFF_CORE = {
 LIBTIFF_CORE.remove(255)  # We don't have support for subfiletypes
 LIBTIFF_CORE.remove(322)  # We don't have support for writing tiled images with libtiff
 LIBTIFF_CORE.remove(323)  # Tiled images
-LIBTIFF_CORE.remove(333)  # Ink Names either
 
 # Note to advanced users: There may be combinations of these
 # parameters and values that when added properly, will work and

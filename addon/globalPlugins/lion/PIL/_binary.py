@@ -13,6 +13,7 @@
 
 
 """Binary input/output support routines."""
+
 from __future__ import annotations
 
 from struct import pack, unpack_from
@@ -75,6 +76,16 @@ def si32le(c: bytes, o: int = 0) -> int:
     :param o: offset of bytes to convert in string
     """
     return unpack_from("<i", c, o)[0]
+
+
+def si32be(c: bytes, o: int = 0) -> int:
+    """
+    Converts a 4-bytes (32 bits) string to a signed integer, big endian.
+
+    :param c: string containing bytes to convert
+    :param o: offset of bytes to convert in string
+    """
+    return unpack_from(">i", c, o)[0]
 
 
 def i16be(c: bytes, o: int = 0) -> int:
