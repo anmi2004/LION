@@ -1,1 +1,4 @@
-Use this file to explain what has changed in your add-on since the previous release. This will be included automatically in the release description when used with GitHub actions.
+##v3.3.0
+*兼容nvda2026.1
+*现在可以过滤识别的结果
+  *可以使用正则表达式，每行一个
