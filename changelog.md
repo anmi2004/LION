@@ -1,6 +1,1 @@
-## 版本3.2.0
-
-* 增加了使用正则过滤识别结果的选项
-  * 可以再设置对话框的过滤对话框中填写
-  *每行一个
-* 兼容NVDA2026.1
+Use this file to explain what has changed in your add-on since the previous release. This will be included automatically in the release description when used with GitHub actions.
