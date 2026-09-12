@@ -27,11 +27,13 @@ addon_info = AddonInfo(
 	addon_version="3.4.0",
 	# Brief changelog for this version
 	# Translators: what's new content for the add-on version to be shown in the add-on store
-	addon_changelog=_("""新增：支持使用正则表达式过滤识别到的文本（每行一个表达式）。
-	优化：设置面板改为使用滑块以便更直观地调整 OCR 间隔和文本相似度阈值。
-	重构：使用滑块映射函数并添加相关单元测试以保证转换的准确性。
-	改进：本地化字符串与文档更新，提升界面一致性与可用性。
-	兼容 NVDA 2026.1"""),
+	addon_changelog=_("""## v3.4.0
+
+- Added regular expression filters for recognized text (one expression per line).
+- Settings panel updated to use sliders for OCR interval and text similarity threshold for easier adjustment.
+- Improved localization and documentation for better UI consistency and usability.
+- Compatible with NVDA 2026.1.
+"""),
 	# Author(s)
 	addon_author="Stefan Moisei <vortex37@gmail.com>, Cary-rowen <manchen_0528@outlook.com>, anmi2004 <123346lv@gmail.com>, hwf1324 <1398969445@qq.com>",
 	# URL for the add-on documentation support
@@ -102,7 +104,7 @@ markdownExtensions: list[str] = []
 brailleTables: BrailleTables = {}
 
 # Custom speech symbol dictionaries
-# Symbol dictionary files reside in the locale folder, e.g. `locale\en`, and are named `symbols-<name>.dic`.
+# Symbol dictionary files reside in the locale folder, e.g. `locale\\en`, and are named `symbols-<name>.dic`.
 # If your add-on includes custom speech symbol dictionaries (most will not), fill out this dictionary.
 # Each key is the name of the dictionary,
 # with keys inside recording the following attributes:
