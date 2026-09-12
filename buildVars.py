@@ -17,19 +17,21 @@ addon_info = AddonInfo(
 	addon_name="LION",
 	# Add-on summary/title, usually the user visible name of the add-on
 	# Translators: Summary/title for this add-on
-	# to be shown on installation and add-on information found in add-on store
+	# to be shown on installation and add-on information found as add-on store
 	addon_summary=_("LION"),
 	# Add-on description
 	# Translators: Long description to be shown for this add-on on add-on information from add-on store
 	addon_description=_("""does live OCR for the whole screen, refreshing at a specified interval.
 	Toggle with NVDA+alt+n."""),
 	# version
-	addon_version="3.3.0",
+	addon_version="3.4.0",
 	# Brief changelog for this version
 	# Translators: what's new content for the add-on version to be shown in the add-on store
-	addon_changelog=_("""Added regular expression filters for recognized text.
-	One expression per line.
-	Compatible with NVDA 2026.1."""),
+	addon_changelog=_("""新增：支持使用正则表达式过滤识别到的文本（每行一个表达式）。
+	优化：设置面板改为使用滑块以便更直观地调整 OCR 间隔和文本相似度阈值。
+	重构：使用滑块映射函数并添加相关单元测试以保证转换的准确性。
+	改进：本地化字符串与文档更新，提升界面一致性与可用性。
+	兼容 NVDA 2026.1"""),
 	# Author(s)
 	addon_author="Stefan Moisei <vortex37@gmail.com>, Cary-rowen <manchen_0528@outlook.com>, anmi2004 <123346lv@gmail.com>, hwf1324 <1398969445@qq.com>",
 	# URL for the add-on documentation support
@@ -53,7 +55,7 @@ addon_info = AddonInfo(
 )
 
 # Define the python files that are the sources of your add-on.
-# You can either list every file (using ""/") as a path separator,
+# You can either list every file (using ""/"/) as a path separator,
 # or use glob expressions.
 # For example to include all files with a ".py" extension from the "globalPlugins" dir of your add-on
 # the list can be written as follows:
@@ -71,8 +73,9 @@ i18nSources: list[str] = pythonSources + ["buildVars.py"]
 
 # Files that will be ignored when building the nvda-addon file
 # Paths are relative to the addon directory, not to the root directory of your addon sources.
-# You can either list every file (using ""/") as a path separator,
+# You can either list every file (using ""/"/) as a path separator,
 # or use glob expressions.
+# Examples: "addon/locale/*/LC_MESSAGES/*.mo"
 excludedFiles: list[str] = []
 
 # Base language for the NVDA add-on
