@@ -27,9 +27,9 @@ addon_info = AddonInfo(
 	addon_version="3.3.0",
 	# Brief changelog for this version
 	# Translators: what's new content for the add-on version to be shown in the add-on store
-	addon_changelog=_("""支持了使用正则过滤识别文本的功能。
-	可以使用多个表达式每行一个。
-	兼容nvda2026.1"""),
+	addon_changelog=_("""Added regular expression filters for recognized text.
+	One expression per line.
+	Compatible with NVDA 2026.1."""),
 	# Author(s)
 	addon_author="Stefan Moisei <vortex37@gmail.com>, Cary-rowen <manchen_0528@outlook.com>, anmi2004 <123346lv@gmail.com>, hwf1324 <1398969445@qq.com>",
 	# URL for the add-on documentation support
@@ -47,9 +47,9 @@ addon_info = AddonInfo(
 	# Do not change unless you know what you are doing!
 	addon_updateChannel=None,
 	# Add-on license such as GPL 2
-	addon_license=None,
+	addon_license="GPL-2.0-or-later",
 	# URL for the license document the ad-on is licensed under
-	addon_licenseURL=None,
+	addon_licenseURL="https://github.com/anmi2004/LION/blob/master/COPYING.txt",
 )
 
 # Define the python files that are the sources of your add-on.
@@ -60,7 +60,11 @@ addon_info = AddonInfo(
 # pythonSources = ["addon/globalPlugins/*.py"]
 # For more information on SCons Glob expressions please take a look at:
 # https://scons.org/doc/production/HTML/scons-user/apd.html
-pythonSources: list[str] = ["addon/globalPlugins/lion/__init__.py","addon/globalPlugins/lion/lionGui.py"]
+pythonSources: list[str] = [
+	"addon/globalPlugins/lion/__init__.py",
+	"addon/globalPlugins/lion/lionGui.py",
+	"addon/globalPlugins/lion/sliderMapping.py",
+]
 
 # Files that contain strings for translation. Usually your python sources
 i18nSources: list[str] = pythonSources + ["buildVars.py"]

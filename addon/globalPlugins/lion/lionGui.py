@@ -1,7 +1,6 @@
 # LION add-on for NVDA
 # This file is covered by the GNU General Public License.
 # See the file COPYING.txt for more details.
-# Copyright (C) 2025 hwf1324 <1398969445@qq.com>
 
 import addonHandler
 import config
@@ -10,34 +9,43 @@ from gui import guiHelper
 from gui import nvdaControls
 import wx
 
+from . import sliderMapping
+
 addonHandler.initTranslation()
+
 
 class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 	title = _("LION")
-	panelDescription = _("modify OCR zone and interval")
+	panelDescription = _("Modify OCR area, interval, and text similarity threshold")
 
-	def makeSettings(self, settingsSizer: wx.BoxSizer):
+	def makeSettings(self, settingsSizer: wx.BoxSizer) -> None:
 		settingsSizerHelper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 
 		valInterval = config.conf.getConfigValidation(("lion", "interval"))
-		intervalMin = int(float(valInterval.kwargs["min"]) * 1000)
-		intervalMax = int(float(valInterval.kwargs["max"]) * 1000)
-		self.intervalEdit = settingsSizerHelper.addLabeledControl(
-			_("OCR &interval (ms):"),
-			nvdaControls.SelectOnFocusSpinCtrl,
-			min=intervalMin,
-			max=intervalMax,
-			initial=int(config.conf["lion"]["interval"] * 1000),
+		intervalMin = sliderMapping.intervalSecondsToSlider(float(valInterval.kwargs["min"]))
+		intervalMax = sliderMapping.intervalSecondsToSlider(float(valInterval.kwargs["max"]))
+		self.intervalSlider = settingsSizerHelper.addLabeledControl(
+			# Translators: label for the OCR interval slider
+			_("OCR &interval (seconds):"),
+			nvdaControls.EnhancedInputSlider,
+			minValue=intervalMin,
+			maxValue=intervalMax,
+		)
+		self.intervalSlider.SetLineSize(1)
+		self.intervalSlider.SetPageSize(10)
+		self.intervalSlider.SetValue(
+			sliderMapping.intervalSecondsToSlider(config.conf["lion"]["interval"])
 		)
 
 		self.targetList = settingsSizerHelper.addLabeledControl(
+			# Translators: label for the OCR target choice
 			_("&OCR target:"),
 			wx.Choice,
 			choices=[
 				_("Navigator object"),
-				_("Whole Screen"),
-				_("current window"),
-				_("current control"),
+				_("Whole screen"),
+				_("Current window"),
+				_("Current control"),
 			],
 		)
 		self.targetList.SetSelection(config.conf["lion"]["target"])
@@ -45,48 +53,81 @@ class LIONSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		valThreshold = config.conf.getConfigValidation(("lion", "threshold"))
 		thresholdMin = int(float(valThreshold.kwargs["min"]) * 100)
 		thresholdMax = int(float(valThreshold.kwargs["max"]) * 100)
-		self.similarityThresholdEdit = settingsSizerHelper.addLabeledControl(
+		self.thresholdSlider = settingsSizerHelper.addLabeledControl(
+			# Translators: label for the text similarity threshold slider
 			_("&Text similarity threshold (%):"),
-			nvdaControls.SelectOnFocusSpinCtrl,
-			min=thresholdMin,
-			max=thresholdMax,
-			initial=int(config.conf["lion"]["threshold"] * 100),
+			nvdaControls.EnhancedInputSlider,
+			minValue=thresholdMin,
+			maxValue=thresholdMax,
+		)
+		self.thresholdSlider.SetLineSize(10)
+		self.thresholdSlider.SetPageSize(20)
+		self.thresholdSlider.SetValue(
+			sliderMapping.thresholdToSlider(config.conf["lion"]["threshold"])
 		)
 
-		self.cropUpEdit = settingsSizerHelper.addLabeledControl(_("Crop pixels from &above (%):"), nvdaControls.SelectOnFocusSpinCtrl, min=0, max=100, initial=config.conf["lion"]["cropUp"])
-		self.cropDownEdit = settingsSizerHelper.addLabeledControl(_("crop pixels from &below(%):"), nvdaControls.SelectOnFocusSpinCtrl, min=0, max=100, initial=config.conf["lion"]["cropDown"])
-		self.cropLeftEdit = settingsSizerHelper.addLabeledControl(_("crop pixels from &left(%):"), nvdaControls.SelectOnFocusSpinCtrl, min=0, max=100, initial=config.conf["lion"]["cropLeft"])
-		self.cropRightEdit = settingsSizerHelper.addLabeledControl(_("crop pixels from &right (%):"), nvdaControls.SelectOnFocusSpinCtrl, min=0, max=100, initial=config.conf["lion"]["cropRight"])
+		self.cropUpSlider = self._addCropSlider(
+			settingsSizerHelper,
+			_("Crop pixels from &above (%):"),
+			config.conf["lion"]["cropUp"],
+		)
+		self.cropDownSlider = self._addCropSlider(
+			settingsSizerHelper,
+			_("Crop pixels from &below (%):"),
+			config.conf["lion"]["cropDown"],
+		)
+		self.cropLeftSlider = self._addCropSlider(
+			settingsSizerHelper,
+			_("Crop pixels from &left (%):"),
+			config.conf["lion"]["cropLeft"],
+		)
+		self.cropRightSlider = self._addCropSlider(
+			settingsSizerHelper,
+			_("Crop pixels from &right (%):"),
+			config.conf["lion"]["cropRight"],
+		)
 
 		self.regexFiltersEdit = settingsSizerHelper.addLabeledControl(
+			# Translators: label for the multiline regular expression filter field
 			_("Regular expression filters (one per &line):"),
 			wx.TextCtrl,
 			style=wx.TE_MULTILINE,
 			size=(-1, 100),
 		)
 		self.regexFiltersEdit.SetValue(config.conf["lion"].get("regexFilters", ""))
-		
-		# 核心：拦截按键钩子，防止回车关闭对话框
 		self.regexFiltersEdit.Bind(wx.EVT_CHAR_HOOK, self.onRegexKeyHook)
 
-	def onRegexKeyHook(self, event):
-		"""处理多行文本框的回车键，确保其换行而不是关闭对话框"""
-		keycode = event.GetKeyCode()
-		if keycode in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
-			# 手动插入换行符
+	def _addCropSlider(
+		self,
+		helper: guiHelper.BoxSizerHelper,
+		label: str,
+		value: int,
+	) -> nvdaControls.EnhancedInputSlider:
+		slider = helper.addLabeledControl(
+			label,
+			nvdaControls.EnhancedInputSlider,
+			minValue=0,
+			maxValue=100,
+		)
+		slider.SetLineSize(1)
+		slider.SetPageSize(10)
+		slider.SetValue(value)
+		return slider
+
+	def onRegexKeyHook(self, event: wx.KeyEvent) -> None:
+		"""Keep Enter inside the multiline filter instead of closing the dialog."""
+		if event.GetKeyCode() in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
 			self.regexFiltersEdit.WriteText("\n")
-			# 不执行 event.Skip()，从而拦截该事件，不让对话框捕获到回车
-			return 
-		# 其他按键正常放行
+			return
 		event.Skip()
 
-	def onSave(self):
+	def onSave(self) -> None:
 		conf = config.conf["lion"]
-		conf["cropUp"] = self.cropUpEdit.GetValue()
-		conf["cropLeft"] = self.cropLeftEdit.GetValue()
-		conf["cropDown"] = self.cropDownEdit.GetValue()
-		conf["cropRight"] = self.cropRightEdit.GetValue()
-		conf["interval"] = float(self.intervalEdit.GetValue() / 1000)
+		conf["cropUp"] = self.cropUpSlider.GetValue()
+		conf["cropLeft"] = self.cropLeftSlider.GetValue()
+		conf["cropDown"] = self.cropDownSlider.GetValue()
+		conf["cropRight"] = self.cropRightSlider.GetValue()
+		conf["interval"] = sliderMapping.sliderToIntervalSeconds(self.intervalSlider.GetValue())
 		conf["target"] = self.targetList.GetSelection()
-		conf["threshold"] = float(self.similarityThresholdEdit.GetValue() / 100)
+		conf["threshold"] = sliderMapping.sliderToThreshold(self.thresholdSlider.GetValue())
 		conf["regexFilters"] = self.regexFiltersEdit.GetValue()

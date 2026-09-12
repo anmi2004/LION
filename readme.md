@@ -3,7 +3,7 @@ LION is an add-on that performs automatic Optical Character Recognition (OCR) on
 
 Why is it called "smart"? Not because I developed it, nor because the "i" makes a clever acronym.  
 
-Since it performs repeated OCR scans on the same screen area, it would normally read identical text multiple times - which isn't ideal. To solve this, I implemented a mechanism that prevents speech output when newly recognized text closely matches previous results.
+Since it performs repeated OCR scans on the same screen area, it would normally read identical text multiple times - which isn't ideal. To solve this, I implemented a mechanism that prevents speech output when newly recognized text closely matches previous results. Recognized text can also be filtered with regular expressions.
 
 # What can I use it for?
 My primary purpose for developing this add-on was subtitle reading. Its working principle enables it to read various types of screen-based subtitles, including those on YouTube, Netflix, Bilibili, embedded subtitles in AVI files, and even live TV captions!  
@@ -26,8 +26,14 @@ For customization:
 1. **OCR Interval**: Frequency of OCR operations (0.1-10 seconds)  
 2. **OCR Target**: Screen area to scan (Options: Current Control/Current Window/Navigation Object/Full Screen)  
 3. **Crop Pixels (Top/Bottom/Right/Left)**: Trims unwanted areas in Full Screen/Current Window modes. Useful for ignoring persistent logos - e.g., cropping 10% from top removes top-left logos. For efficiency, you might crop 70% from top as subtitles typically occupy the lower third.  
+4. **Text Similarity Threshold**: Controls how similar new text must be before it is spoken. The slider moves in 10% steps.
+5. **Regular Expression Filters**: Removes matching text from OCR results. Enter one regular expression per line.
 
 # Changelog
+## Version 3.3.0
+1. Added regular expression filters for recognized text, with one expression per line.
+2. Made LION compatible with NVDA 2026.1.
+
 ## Version 2.0
 1. Complete OCR engine overhaul using PaddleOCR-json for improved accuracy  
 2. Implemented add-on template for easier compilation  

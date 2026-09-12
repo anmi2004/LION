@@ -3,11 +3,13 @@ requires = ["setuptools~=80.9", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "addonTemplate"
+name = "LION"
 dynamic = ["version"]
-description = "NVDA add-on template"
+description = "LION: a live OCR add-on for NVDA"
 maintainers = [
-	{name = "NV Access", email = "info@nvaccess.org"},
+	{name = "anmi2004", email = "123346lv@gmail.com"},
+	{name = "Cary-rowen", email = "manchen_0528@outlook.com"},
+	{name = "hwf1324", email = "1398969445@qq.com"},
 ]
 requires-python = ">=3.13,<3.14"
 classifiers = [
@@ -39,7 +41,7 @@ dependencies = [
 	"pyright[nodejs]==1.1.407",
 ]
 [project.urls]
-Repository = "https://github.com/nvaccess/addonTemplate"
+Repository = "https://github.com/anmi2004/LION"
 
 [tool.ruff]
 line-length = 110

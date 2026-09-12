@@ -1,5 +1,5 @@
 ##v3.3.0
 
-* 兼容nvda2026.1
-* 现在可以过滤识别的结果
-  * 可以使用正则表达式，每行一个
+* Compatible with NVDA 2026.1.
+* Added regular expression filters for recognized text.
+  * One expression per line.
